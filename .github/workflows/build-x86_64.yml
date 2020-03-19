@@ -49,7 +49,7 @@ jobs:
           docker build -t gone/php:apache-5.6         --target=php-apache         --build-arg "PHP_VERSION=5.6" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_56" .
           docker build -t gone/php:apache-5.6-onbuild --target=php-apache-onbuild --build-arg "PHP_VERSION=5.6" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_56" .
         env:
-          PHP_APACHE_PACKAGES_56: git mariadb-client php-apcu php-xdebug php5.6-bcmath php5.6-bz2 php5.6-cli php5.6-curl php5.6-gd php5.6-imap php5.6-intl php5.6-json php5.6-ldap php5.6-mbstring php5.6-mcrypt php5.6-memcache php5.6-memcached php5.6-mongodb php5.6-mysql php5.6-opcache php5.6-pgsql php5.6-phpdbg php5.6-pspell php5.6-redis php5.6-soap php5.6-sqlite php5.6-xml php5.6-zip postgresql-client
+          PHP_APACHE_PACKAGES_56: git mariadb-client php php-apcu php-xdebug php5.6-bcmath php5.6-bz2 php5.6-cli php5.6-curl php5.6-gd php5.6-imap php5.6-intl php5.6-json php5.6-ldap php5.6-mbstring php5.6-mcrypt php5.6-memcache php5.6-memcached php5.6-mongodb php5.6-mysql php5.6-opcache php5.6-pgsql php5.6-phpdbg php5.6-pspell php5.6-redis php5.6-soap php5.6-sqlite php5.6-xml php5.6-zip postgresql-client
       - name: Tag Image
         run: |
           docker tag gone/php:apache-5.6         docker.pkg.github.com/goneio/base-image/php:apache-5.6
@@ -79,7 +79,7 @@ jobs:
           docker build -t gone/php:apache-7.0         --target=php-apache         --build-arg "PHP_VERSION=7.0" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_70" .
           docker build -t gone/php:apache-7.0-onbuild --target=php-apache-onbuild --build-arg "PHP_VERSION=7.0" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_70" .
         env:
-          PHP_APACHE_PACKAGES_70: git mariadb-client php-apcu php-xdebug php7.0-bcmath php7.0-bz2 php7.0-cli php7.0-curl php7.0-gd php7.0-imap php7.0-intl php7.0-json php7.0-ldap php7.0-mbstring php7.0-mcrypt php7.0-memcache php7.0-memcached php7.0-mongodb php7.0-mysql php7.0-opcache php7.0-pgsql php7.0-phpdbg php7.0-pspell php7.0-redis php7.0-soap php7.0-sqlite php7.0-xml php7.0-zip postgresql-client
+          PHP_APACHE_PACKAGES_70: git mariadb-client php php-apcu php-xdebug php7.0-bcmath php7.0-bz2 php7.0-cli php7.0-curl php7.0-gd php7.0-imap php7.0-intl php7.0-json php7.0-ldap php7.0-mbstring php7.0-mcrypt php7.0-memcache php7.0-memcached php7.0-mongodb php7.0-mysql php7.0-opcache php7.0-pgsql php7.0-phpdbg php7.0-pspell php7.0-redis php7.0-soap php7.0-sqlite php7.0-xml php7.0-zip postgresql-client
       - name: Tag Image
         run: |
           docker tag gone/php:apache-7.0         docker.pkg.github.com/goneio/base-image/php:apache-7.0
@@ -109,7 +109,7 @@ jobs:
           docker build -t gone/php:apache-7.1         --target=php-apache         --build-arg "PHP_VERSION=7.1" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_71" .
           docker build -t gone/php:apache-7.1-onbuild --target=php-apache-onbuild --build-arg "PHP_VERSION=7.1" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_71" .
         env:
-          PHP_APACHE_PACKAGES_71: git mariadb-client php-apcu php-xdebug php7.1-bcmath php7.1-bz2 php7.1-cli php7.1-curl php7.1-db php7.1-gd php7.1-imap php7.1-intl php7.1-json php7.1-ldap php7.1-mbstring php7.1-mcrypt php7.1-memcache php7.1-memcached php7.1-mongodb php7.1-mysql php7.1-opcache php7.1-pgsql php7.1-phpdbg php7.1-pspell php7.1-redis php7.1-soap php7.1-sqlite php7.1-xml php7.1-zip postgresql-client
+          PHP_APACHE_PACKAGES_71: git mariadb-client php php-apcu php-xdebug php7.1-bcmath php7.1-bz2 php7.1-cli php7.1-curl php7.1-db php7.1-gd php7.1-imap php7.1-intl php7.1-json php7.1-ldap php7.1-mbstring php7.1-mcrypt php7.1-memcache php7.1-memcached php7.1-mongodb php7.1-mysql php7.1-opcache php7.1-pgsql php7.1-phpdbg php7.1-pspell php7.1-redis php7.1-soap php7.1-sqlite php7.1-xml php7.1-zip postgresql-client
       - name: Tag Image
         run: |
           docker tag gone/php:apache-7.1         docker.pkg.github.com/goneio/base-image/php:apache-7.1
@@ -139,7 +139,7 @@ jobs:
           docker build -t gone/php:apache-7.2         --target=php-apache         --build-arg "PHP_VERSION=7.2" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_72" .
           docker build -t gone/php:apache-7.2-onbuild --target=php-apache-onbuild --build-arg "PHP_VERSION=7.2" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_72" .
         env:
-          PHP_APACHE_PACKAGES_72: git mariadb-client php-apcu php-xdebug php7.2-bcmath php7.2-bz2 php7.2-cli php7.2-curl php7.2-gd php7.2-imap php7.2-intl php7.2-json php7.2-ldap php7.2-mbstring php7.2-memcache php7.2-memcached php7.2-mongodb php7.2-mysql php7.2-opcache php7.2-pgsql php7.2-phpdbg php7.2-pspell php7.2-redis php7.2-soap php7.2-sqlite php7.2-xml php7.2-zip postgresql-client
+          PHP_APACHE_PACKAGES_72: git mariadb-client php php-apcu php-xdebug php7.2-bcmath php7.2-bz2 php7.2-cli php7.2-curl php7.2-gd php7.2-imap php7.2-intl php7.2-json php7.2-ldap php7.2-mbstring php7.2-memcache php7.2-memcached php7.2-mongodb php7.2-mysql php7.2-opcache php7.2-pgsql php7.2-phpdbg php7.2-pspell php7.2-redis php7.2-soap php7.2-sqlite php7.2-xml php7.2-zip postgresql-client
       - name: Tag Image
         run: |
           docker tag gone/php:apache-7.2         docker.pkg.github.com/goneio/base-image/php:apache-7.2
@@ -169,7 +169,7 @@ jobs:
           docker build -t gone/php:apache-7.3         --target=php-apache         --build-arg "PHP_VERSION=7.3" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_73" .
           docker build -t gone/php:apache-7.3-onbuild --target=php-apache-onbuild --build-arg "PHP_VERSION=7.3" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_73" .
         env:
-          PHP_APACHE_PACKAGES_73: git mariadb-client php-apcu php-xdebug php7.3-bcmath php7.3-bz2 php7.3-cli php7.3-curl php7.3-gd php7.3-imap php7.3-intl php7.3-json php7.3-ldap php7.3-mbstring php7.3-memcache php7.3-memcached php7.3-mongodb php7.3-mysql php7.3-opcache php7.3-pgsql php7.3-phpdbg php7.3-pspell php7.3-redis php7.3-soap php7.3-sqlite php7.3-xml php7.3-zip postgresql-client
+          PHP_APACHE_PACKAGES_73: git mariadb-client php php-apcu php-xdebug php7.3-bcmath php7.3-bz2 php7.3-cli php7.3-curl php7.3-gd php7.3-imap php7.3-intl php7.3-json php7.3-ldap php7.3-mbstring php7.3-memcache php7.3-memcached php7.3-mongodb php7.3-mysql php7.3-opcache php7.3-pgsql php7.3-phpdbg php7.3-pspell php7.3-redis php7.3-soap php7.3-sqlite php7.3-xml php7.3-zip postgresql-client
       - name: Tag Image
         run: |
           docker tag gone/php:apache-7.3         docker.pkg.github.com/goneio/base-image/php:apache-7.3
@@ -199,7 +199,7 @@ jobs:
           docker build -t gone/php:apache-7.4         --target=php-apache         --build-arg "PHP_VERSION=7.4" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_74" .
           docker build -t gone/php:apache-7.4-onbuild --target=php-apache-onbuild --build-arg "PHP_VERSION=7.4" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_74" .
         env:
-          PHP_APACHE_PACKAGES_74: git mariadb-client php-apcu php-xdebug php7.4-bcmath php7.4-bz2 php7.4-cli php7.4-curl php7.4-gd php7.4-imap php7.4-intl php7.4-json php7.4-ldap php7.4-mbstring php7.4-memcache php7.4-mongodb php7.4-mysql php7.4-opcache php7.4-pgsql php7.4-phpdbg php7.4-pspell php7.4-soap php7.4-sqlite php7.4-xml php7.4-zip postgresql-client
+          PHP_APACHE_PACKAGES_74: git mariadb-client php php-apcu php-xdebug php7.4-bcmath php7.4-bz2 php7.4-cli php7.4-curl php7.4-gd php7.4-imap php7.4-intl php7.4-json php7.4-ldap php7.4-mbstring php7.4-memcache php7.4-mongodb php7.4-mysql php7.4-opcache php7.4-pgsql php7.4-phpdbg php7.4-pspell php7.4-soap php7.4-sqlite php7.4-xml php7.4-zip postgresql-client
       - name: Tag Image
         run: |
           docker tag gone/php:apache-7.4         docker.pkg.github.com/goneio/base-image/php:apache-7.4
@@ -230,7 +230,7 @@ jobs:
           docker build -t gone/php:nginx-5.6         --target=php-nginx         --build-arg "PHP_VERSION=5.6" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_56" .
           docker build -t gone/php:nginx-5.6-onbuild --target=php-nginx-onbuild --build-arg "PHP_VERSION=5.6" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_56" .
         env:
-          PHP_PACKAGES_56: git mariadb-client php-apcu php-xdebug php5.6-bcmath php5.6-bz2 php5.6-cli php5.6-curl php5.6-gd php5.6-imap php5.6-intl php5.6-json php5.6-ldap php5.6-mbstring php5.6-mcrypt php5.6-memcache php5.6-memcached php5.6-mongodb php5.6-mysql php5.6-opcache php5.6-pgsql php5.6-phpdbg php5.6-pspell php5.6-redis php5.6-soap php5.6-sqlite php5.6-xml php5.6-zip postgresql-client
+          PHP_PACKAGES_56: git mariadb-client php php-apcu php-xdebug php5.6-bcmath php5.6-bz2 php5.6-cli php5.6-curl php5.6-gd php5.6-imap php5.6-intl php5.6-json php5.6-ldap php5.6-mbstring php5.6-mcrypt php5.6-memcache php5.6-memcached php5.6-mongodb php5.6-mysql php5.6-opcache php5.6-pgsql php5.6-phpdbg php5.6-pspell php5.6-redis php5.6-soap php5.6-sqlite php5.6-xml php5.6-zip postgresql-client
       - name: Tag Image
         run: |
           docker tag gone/php:nginx-5.6         docker.pkg.github.com/goneio/base-image/php:nginx-5.6
@@ -260,7 +260,7 @@ jobs:
           docker build -t gone/php:nginx-7.0         --target=php-nginx         --build-arg "PHP_VERSION=7.0" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_70" .
           docker build -t gone/php:nginx-7.0-onbuild --target=php-nginx-onbuild --build-arg "PHP_VERSION=7.0" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_70" .
         env:
-          PHP_PACKAGES_70: git mariadb-client php-apcu php-xdebug php7.0-bcmath php7.0-bz2 php7.0-cli php7.0-curl php7.0-gd php7.0-imap php7.0-intl php7.0-json php7.0-ldap php7.0-mbstring php7.0-mcrypt php7.0-memcache php7.0-memcached php7.0-mongodb php7.0-mysql php7.0-opcache php7.0-pgsql php7.0-phpdbg php7.0-pspell php7.0-redis php7.0-soap php7.0-sqlite php7.0-xml php7.0-zip postgresql-client
+          PHP_PACKAGES_70: git mariadb-client php php-apcu php-xdebug php7.0-bcmath php7.0-bz2 php7.0-cli php7.0-curl php7.0-gd php7.0-imap php7.0-intl php7.0-json php7.0-ldap php7.0-mbstring php7.0-mcrypt php7.0-memcache php7.0-memcached php7.0-mongodb php7.0-mysql php7.0-opcache php7.0-pgsql php7.0-phpdbg php7.0-pspell php7.0-redis php7.0-soap php7.0-sqlite php7.0-xml php7.0-zip postgresql-client
       - name: Tag Image
         run: |
           docker tag gone/php:nginx-7.0         docker.pkg.github.com/goneio/base-image/php:nginx-7.0
@@ -290,7 +290,7 @@ jobs:
           docker build -t gone/php:nginx-7.1         --target=php-nginx         --build-arg "PHP_VERSION=7.1" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_71" .
           docker build -t gone/php:nginx-7.1-onbuild --target=php-nginx-onbuild --build-arg "PHP_VERSION=7.1" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_71" .
         env:
-          PHP_PACKAGES_71: git mariadb-client php-apcu php-xdebug php7.1-bcmath php7.1-bz2 php7.1-cli php7.1-curl php7.1-db php7.1-gd php7.1-imap php7.1-intl php7.1-json php7.1-ldap php7.1-mbstring php7.1-mcrypt php7.1-memcache php7.1-memcached php7.1-mongodb php7.1-mysql php7.1-opcache php7.1-pgsql php7.1-phpdbg php7.1-pspell php7.1-redis php7.1-soap php7.1-sqlite php7.1-xml php7.1-zip postgresql-client
+          PHP_PACKAGES_71: git mariadb-client php php-apcu php-xdebug php7.1-bcmath php7.1-bz2 php7.1-cli php7.1-curl php7.1-db php7.1-gd php7.1-imap php7.1-intl php7.1-json php7.1-ldap php7.1-mbstring php7.1-mcrypt php7.1-memcache php7.1-memcached php7.1-mongodb php7.1-mysql php7.1-opcache php7.1-pgsql php7.1-phpdbg php7.1-pspell php7.1-redis php7.1-soap php7.1-sqlite php7.1-xml php7.1-zip postgresql-client
       - name: Tag Image
         run: |
           docker tag gone/php:nginx-7.1         docker.pkg.github.com/goneio/base-image/php:nginx-7.1
@@ -320,7 +320,7 @@ jobs:
           docker build -t gone/php:nginx-7.2         --target=php-nginx         --build-arg "PHP_VERSION=7.2" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_72" .
           docker build -t gone/php:nginx-7.2-onbuild --target=php-nginx-onbuild --build-arg "PHP_VERSION=7.2" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_72" .
         env:
-          PHP_PACKAGES_72: git mariadb-client php-apcu php-xdebug php7.2-bcmath php7.2-bz2 php7.2-cli php7.2-curl php7.2-gd php7.2-imap php7.2-intl php7.2-json php7.2-ldap php7.2-mbstring php7.2-memcache php7.2-memcached php7.2-mongodb php7.2-mysql php7.2-opcache php7.2-pgsql php7.2-phpdbg php7.2-pspell php7.2-redis php7.2-soap php7.2-sqlite php7.2-xml php7.2-zip postgresql-client
+          PHP_PACKAGES_72: git mariadb-client php php-apcu php-xdebug php7.2-bcmath php7.2-bz2 php7.2-cli php7.2-curl php7.2-gd php7.2-imap php7.2-intl php7.2-json php7.2-ldap php7.2-mbstring php7.2-memcache php7.2-memcached php7.2-mongodb php7.2-mysql php7.2-opcache php7.2-pgsql php7.2-phpdbg php7.2-pspell php7.2-redis php7.2-soap php7.2-sqlite php7.2-xml php7.2-zip postgresql-client
       - name: Tag Image
         run: |
           docker tag gone/php:nginx-7.2         docker.pkg.github.com/goneio/base-image/php:nginx-7.2
@@ -350,7 +350,7 @@ jobs:
           docker build -t gone/php:nginx-7.3         --target=php-nginx         --build-arg "PHP_VERSION=7.3" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_73" .
           docker build -t gone/php:nginx-7.3-onbuild --target=php-nginx-onbuild --build-arg "PHP_VERSION=7.3" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_73" .
         env:
-          PHP_PACKAGES_73: git mariadb-client php-apcu php-xdebug php7.3-bcmath php7.3-bz2 php7.3-cli php7.3-curl php7.3-gd php7.3-imap php7.3-intl php7.3-json php7.3-ldap php7.3-mbstring php7.3-memcache php7.3-memcached php7.3-mongodb php7.3-mysql php7.3-opcache php7.3-pgsql php7.3-phpdbg php7.3-pspell php7.3-redis php7.3-soap php7.3-sqlite php7.3-xml php7.3-zip postgresql-client
+          PHP_PACKAGES_73: git mariadb-client php php-apcu php-xdebug php7.3-bcmath php7.3-bz2 php7.3-cli php7.3-curl php7.3-gd php7.3-imap php7.3-intl php7.3-json php7.3-ldap php7.3-mbstring php7.3-memcache php7.3-memcached php7.3-mongodb php7.3-mysql php7.3-opcache php7.3-pgsql php7.3-phpdbg php7.3-pspell php7.3-redis php7.3-soap php7.3-sqlite php7.3-xml php7.3-zip postgresql-client
       - name: Tag Image
         run: |
           docker tag gone/php:nginx-7.3         docker.pkg.github.com/goneio/base-image/php:nginx-7.3
@@ -380,7 +380,7 @@ jobs:
           docker build -t gone/php:nginx-7.4         --target=php-nginx         --build-arg "PHP_VERSION=7.4" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_74" .
           docker build -t gone/php:nginx-7.4-onbuild --target=php-nginx-onbuild --build-arg "PHP_VERSION=7.4" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_74" .
         env:
-          PHP_PACKAGES_74: git mariadb-client php-apcu php-xdebug php7.4-bcmath php7.4-bz2 php7.4-cli php7.4-curl php7.4-gd php7.4-imap php7.4-intl php7.4-json php7.4-ldap php7.4-mbstring php7.4-memcache php7.4-mongodb php7.4-mysql php7.4-opcache php7.4-pgsql php7.4-phpdbg php7.4-pspell php7.4-soap php7.4-sqlite php7.4-xml php7.4-zip postgresql-client
+          PHP_PACKAGES_74: git mariadb-client php php-apcu php-xdebug php7.4-bcmath php7.4-bz2 php7.4-cli php7.4-curl php7.4-gd php7.4-imap php7.4-intl php7.4-json php7.4-ldap php7.4-mbstring php7.4-memcache php7.4-mongodb php7.4-mysql php7.4-opcache php7.4-pgsql php7.4-phpdbg php7.4-pspell php7.4-soap php7.4-sqlite php7.4-xml php7.4-zip postgresql-client
       - name: Tag Image
         run: |
           docker tag gone/php:nginx-7.4         docker.pkg.github.com/goneio/base-image/php:nginx-7.4
@@ -410,7 +410,7 @@ jobs:
           docker build -t gone/php:cli-5.6         --target=php-cli         --build-arg "PHP_VERSION=5.6" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_56" .
           docker build -t gone/php:cli-5.6-onbuild --target=php-cli-onbuild --build-arg "PHP_VERSION=5.6" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_56" .
         env:
-          PHP_PACKAGES_56: git mariadb-client php-apcu php-xdebug php5.6-bcmath php5.6-bz2 php5.6-cli php5.6-curl php5.6-gd php5.6-imap php5.6-intl php5.6-json php5.6-ldap php5.6-mbstring php5.6-mcrypt php5.6-memcache php5.6-memcached php5.6-mongodb php5.6-mysql php5.6-opcache php5.6-pgsql php5.6-phpdbg php5.6-pspell php5.6-redis php5.6-soap php5.6-sqlite php5.6-xml php5.6-zip postgresql-client
+          PHP_PACKAGES_56: git mariadb-client php php-apcu php-xdebug php5.6-bcmath php5.6-bz2 php5.6-cli php5.6-curl php5.6-gd php5.6-imap php5.6-intl php5.6-json php5.6-ldap php5.6-mbstring php5.6-mcrypt php5.6-memcache php5.6-memcached php5.6-mongodb php5.6-mysql php5.6-opcache php5.6-pgsql php5.6-phpdbg php5.6-pspell php5.6-redis php5.6-soap php5.6-sqlite php5.6-xml php5.6-zip postgresql-client
       - name: Tag Image
         run: |
           docker tag gone/php:cli-5.6         docker.pkg.github.com/goneio/base-image/php:cli-5.6
@@ -440,7 +440,7 @@ jobs:
           docker build -t gone/php:cli-7.0         --target=php-cli         --build-arg "PHP_VERSION=7.0" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_70" .
           docker build -t gone/php:cli-7.0-onbuild --target=php-cli-onbuild --build-arg "PHP_VERSION=7.0" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_70" .
         env:
-          PHP_PACKAGES_70: git mariadb-client php-apcu php-xdebug php7.0-bcmath php7.0-bz2 php7.0-cli php7.0-curl php7.0-gd php7.0-imap php7.0-intl php7.0-json php7.0-ldap php7.0-mbstring php7.0-mcrypt php7.0-memcache php7.0-memcached php7.0-mongodb php7.0-mysql php7.0-opcache php7.0-pgsql php7.0-phpdbg php7.0-pspell php7.0-redis php7.0-soap php7.0-sqlite php7.0-xml php7.0-zip postgresql-client
+          PHP_PACKAGES_70: git mariadb-client php php-apcu php-xdebug php7.0-bcmath php7.0-bz2 php7.0-cli php7.0-curl php7.0-gd php7.0-imap php7.0-intl php7.0-json php7.0-ldap php7.0-mbstring php7.0-mcrypt php7.0-memcache php7.0-memcached php7.0-mongodb php7.0-mysql php7.0-opcache php7.0-pgsql php7.0-phpdbg php7.0-pspell php7.0-redis php7.0-soap php7.0-sqlite php7.0-xml php7.0-zip postgresql-client
       - name: Tag Image
         run: |
           docker tag gone/php:cli-7.0         docker.pkg.github.com/goneio/base-image/php:cli-7.0
@@ -470,7 +470,7 @@ jobs:
           docker build -t gone/php:cli-7.1         --target=php-cli         --build-arg "PHP_VERSION=7.1" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_71" .
           docker build -t gone/php:cli-7.1-onbuild --target=php-cli-onbuild --build-arg "PHP_VERSION=7.1" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_71" .
         env:
-          PHP_PACKAGES_71: git mariadb-client php-apcu php-xdebug php7.1-bcmath php7.1-bz2 php7.1-cli php7.1-curl php7.1-db php7.1-gd php7.1-imap php7.1-intl php7.1-json php7.1-ldap php7.1-mbstring php7.1-mcrypt php7.1-memcache php7.1-memcached php7.1-mongodb php7.1-mysql php7.1-opcache php7.1-pgsql php7.1-phpdbg php7.1-pspell php7.1-redis php7.1-soap php7.1-sqlite php7.1-xml php7.1-zip postgresql-client
+          PHP_PACKAGES_71: git mariadb-client php php-apcu php-xdebug php7.1-bcmath php7.1-bz2 php7.1-cli php7.1-curl php7.1-db php7.1-gd php7.1-imap php7.1-intl php7.1-json php7.1-ldap php7.1-mbstring php7.1-mcrypt php7.1-memcache php7.1-memcached php7.1-mongodb php7.1-mysql php7.1-opcache php7.1-pgsql php7.1-phpdbg php7.1-pspell php7.1-redis php7.1-soap php7.1-sqlite php7.1-xml php7.1-zip postgresql-client
       - name: Tag Image
         run: |
           docker tag gone/php:cli-7.1         docker.pkg.github.com/goneio/base-image/php:cli-7.1
@@ -500,7 +500,7 @@ jobs:
           docker build -t gone/php:cli-7.2         --target=php-cli         --build-arg "PHP_VERSION=7.2" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_72" .
           docker build -t gone/php:cli-7.2-onbuild --target=php-cli-onbuild --build-arg "PHP_VERSION=7.2" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_72" .
         env:
-          PHP_PACKAGES_72: git mariadb-client php-apcu php-xdebug php7.2-bcmath php7.2-bz2 php7.2-cli php7.2-curl php7.2-gd php7.2-imap php7.2-intl php7.2-json php7.2-ldap php7.2-mbstring php7.2-memcache php7.2-memcached php7.2-mongodb php7.2-mysql php7.2-opcache php7.2-pgsql php7.2-phpdbg php7.2-pspell php7.2-redis php7.2-soap php7.2-sqlite php7.2-xml php7.2-zip postgresql-client
+          PHP_PACKAGES_72: git mariadb-client php php-apcu php-xdebug php7.2-bcmath php7.2-bz2 php7.2-cli php7.2-curl php7.2-gd php7.2-imap php7.2-intl php7.2-json php7.2-ldap php7.2-mbstring php7.2-memcache php7.2-memcached php7.2-mongodb php7.2-mysql php7.2-opcache php7.2-pgsql php7.2-phpdbg php7.2-pspell php7.2-redis php7.2-soap php7.2-sqlite php7.2-xml php7.2-zip postgresql-client
       - name: Tag Image
         run: |
           docker tag gone/php:cli-7.2         docker.pkg.github.com/goneio/base-image/php:cli-7.2
@@ -530,7 +530,7 @@ jobs:
           docker build -t gone/php:cli-7.3         --target=php-cli         --build-arg "PHP_VERSION=7.3" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_73" .
           docker build -t gone/php:cli-7.3-onbuild --target=php-cli-onbuild --build-arg "PHP_VERSION=7.3" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_73" .
         env:
-          PHP_PACKAGES_73: git mariadb-client php-apcu php-xdebug php7.3-bcmath php7.3-bz2 php7.3-cli php7.3-curl php7.3-gd php7.3-imap php7.3-intl php7.3-json php7.3-ldap php7.3-mbstring php7.3-memcache php7.3-memcached php7.3-mongodb php7.3-mysql php7.3-opcache php7.3-pgsql php7.3-phpdbg php7.3-pspell php7.3-redis php7.3-soap php7.3-sqlite php7.3-xml php7.3-zip postgresql-client
+          PHP_PACKAGES_73: git mariadb-client php php-apcu php-xdebug php7.3-bcmath php7.3-bz2 php7.3-cli php7.3-curl php7.3-gd php7.3-imap php7.3-intl php7.3-json php7.3-ldap php7.3-mbstring php7.3-memcache php7.3-memcached php7.3-mongodb php7.3-mysql php7.3-opcache php7.3-pgsql php7.3-phpdbg php7.3-pspell php7.3-redis php7.3-soap php7.3-sqlite php7.3-xml php7.3-zip postgresql-client
       - name: Tag Image
         run: |
           docker tag gone/php:cli-7.3         docker.pkg.github.com/goneio/base-image/php:cli-7.3
@@ -560,7 +560,7 @@ jobs:
           docker build -t gone/php:cli-7.4         --target=php-cli         --build-arg "PHP_VERSION=7.4" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_74" .
           docker build -t gone/php:cli-7.4-onbuild --target=php-cli-onbuild --build-arg "PHP_VERSION=7.4" --build-arg "PHP_PACKAGES=$PHP_PACKAGES_74" .
         env:
-          PHP_PACKAGES_74: git mariadb-client php-apcu php-xdebug php7.4-bcmath php7.4-bz2 php7.4-cli php7.4-curl php7.4-gd php7.4-imap php7.4-intl php7.4-json php7.4-ldap php7.4-mbstring php7.4-memcache php7.4-mongodb php7.4-mysql php7.4-opcache php7.4-pgsql php7.4-phpdbg php7.4-pspell php7.4-soap php7.4-sqlite php7.4-xml php7.4-zip postgresql-client
+          PHP_PACKAGES_74: git mariadb-client php php-apcu php-xdebug php7.4-bcmath php7.4-bz2 php7.4-cli php7.4-curl php7.4-gd php7.4-imap php7.4-intl php7.4-json php7.4-ldap php7.4-mbstring php7.4-memcache php7.4-mongodb php7.4-mysql php7.4-opcache php7.4-pgsql php7.4-phpdbg php7.4-pspell php7.4-soap php7.4-sqlite php7.4-xml php7.4-zip postgresql-client
       - name: Tag Image
         run: |
           docker tag gone/php:cli-7.4         docker.pkg.github.com/goneio/base-image/php:cli-7.4
