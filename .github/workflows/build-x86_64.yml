@@ -2,17 +2,6 @@ name: PHP on x86_64
 
 on:
   push:
-    paths:
-      - 'php+cli/**'
-      - 'php+apache/**'
-      - 'php+nginx/**'
-      - 'php-core/**'
-      - 'marshall/**'
-      - 'Dockerfile'
-      - '.dockerignore'
-      - '.github/workflows/build-php-apache.yml'
-      - '.github/workflows/build-php-nginx.yml'
-      - '.github/workflows/build-php-cli.yml'
   schedule:
     - cron: '0 4 * * TUE'
 

@@ -2,17 +2,6 @@ name: PHP on arm64v8
 
 on:
   push:
-    paths:
-      - 'php+cli/**'
-      - 'php+apache/**'
-      - 'php+nginx/**'
-      - 'php-core/**'
-      - 'marshall/**'
-      - 'Dockerfile'
-      - '.dockerignore'
-      - '.github/workflows/build-php-apache.yml'
-      - '.github/workflows/build-php-nginx.yml'
-      - '.github/workflows/build-php-cli.yml'
   schedule:
     - cron: '0 4 * * TUE'
 
@@ -49,7 +38,7 @@ jobs:
       - name: Login to registries
         run: |
           docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} -p  ${{ secrets.DOCKER_HUB_PASSWORD }}
-          docker login docker.pkg.github.com -u ${{ secrets.DOCKER_GITHUB_USERNAME }} -p  ${{ secrets.DOCKER_GITHUB_PASSWORD }}
+          docker login dockerSymlink FPM config to CLI & PHPDBG.pkg.github.com -u ${{ secrets.DOCKER_GITHUB_USERNAME }} -p  ${{ secrets.DOCKER_GITHUB_PASSWORD }}
       - name: Setup
         run: |
           git rev-parse --short HEAD > marshall/marshall-arm64v8_version
