@@ -41,7 +41,7 @@ jobs:
         docker push gone/marshall-arm64v8:latest
         docker push docker.pkg.github.com/goneio/base-image/marshall-arm64v8:latest
 
-  PHP_APACHE_APACHE_56:
+  PHP_APACHE_56:
     runs-on: ubuntu-latest
     needs: [Marshall]
     steps:
@@ -71,7 +71,7 @@ jobs:
           docker push gone/php-arm64v8:apache-5.6-onbuild
           docker push docker.pkg.github.com/goneio/base-image/php-arm64v8:apache-5.6
           docker push docker.pkg.github.com/goneio/base-image/php-arm64v8:apache-5.6-onbuild
-  PHP_APACHE_APACHE_70:
+  PHP_APACHE_70:
     runs-on: ubuntu-latest
     needs: [Marshall]
     steps:
@@ -101,7 +101,7 @@ jobs:
           docker push gone/php-arm64v8:apache-7.0-onbuild
           docker push docker.pkg.github.com/goneio/base-image/php-arm64v8:apache-7.0
           docker push docker.pkg.github.com/goneio/base-image/php-arm64v8:apache-7.0-onbuild
-  PHP_APACHE_APACHE_71:
+  PHP_APACHE_71:
     runs-on: ubuntu-latest
     needs: [Marshall]
     steps:
@@ -131,7 +131,7 @@ jobs:
           docker push gone/php-arm64v8:apache-7.1-onbuild
           docker push docker.pkg.github.com/goneio/base-image/php-arm64v8:apache-7.1
           docker push docker.pkg.github.com/goneio/base-image/php-arm64v8:apache-7.1-onbuild
-  PHP_APACHE_APACHE_72:
+  PHP_APACHE_72:
     runs-on: ubuntu-latest
     needs: [Marshall]
     steps:
@@ -161,7 +161,7 @@ jobs:
           docker push gone/php-arm64v8:apache-7.2-onbuild
           docker push docker.pkg.github.com/goneio/base-image/php-arm64v8:apache-7.2
           docker push docker.pkg.github.com/goneio/base-image/php-arm64v8:apache-7.2-onbuild
-  PHP_APACHE_APACHE_73:
+  PHP_APACHE_73:
     runs-on: ubuntu-latest
     needs: [Marshall]
     steps:
@@ -191,7 +191,7 @@ jobs:
           docker push gone/php-arm64v8:apache-7.3-onbuild
           docker push docker.pkg.github.com/goneio/base-image/php-arm64v8:apache-7.3
           docker push docker.pkg.github.com/goneio/base-image/php-arm64v8:apache-7.3-onbuild
-  PHP_APACHE_APACHE_74:
+  PHP_APACHE_74:
     runs-on: ubuntu-latest
     needs: [Marshall]
     steps:
