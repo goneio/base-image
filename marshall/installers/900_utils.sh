@@ -11,4 +11,5 @@ $APT_GET \
     git \
     openssh-client \
     ca-certificates \
-    jq
+    jq \
+    dos2unix
