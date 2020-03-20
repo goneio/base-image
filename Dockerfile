@@ -21,10 +21,11 @@ RUN chmod +x /installers/install && \
     /installers/install && \
     rm -rf /installers
 
-FROM gone/marshall:latest AS php-core
+FROM marshall AS php-core
 ARG PHP_PACKAGES
 COPY php-core/install-report.sh /usr/bin/install-report
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN echo "Installing: $PHP_PACKAGES"
 RUN echo "APT::Acquire::Retries \"5\";" > /etc/apt/apt.conf.d/80-retries && \
     apt-get -qq update && \
     apt-get -yqq install --no-install-recommends \

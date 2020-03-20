@@ -1,0 +1,14 @@
+{
+    "name": "gone/base-image",
+    "type": "project",
+    "require": {
+        "kint-php/kint": "^3.3",
+        "symfony/yaml": "^5.0"
+    },
+    "authors": [
+        {
+            "name": "Matthew Baggett",
+            "email": "matthew@baggett.me"
+        }
+    ]
+}

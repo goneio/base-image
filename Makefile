@@ -521,8 +521,10 @@ clean:
 transmute:
 	chmod +x ./scripts/*.sh
 	./scripts/transmute-all.sh
+	./scripts/generate-buildplan.php
+	head -n 100 .github/workflows/build.yml
 
 test-workflow:
 	$(MAKE) transmute
 	$(MAKE) clean
-	act -j PHP_CLI_74
+	act
