@@ -16,7 +16,8 @@ WORKDIR /app
 
 COPY ./marshall/ /
 
-RUN chmod +x /installers/install && \
+RUN ls -lah / && \
+    chmod +x /installers/install && \
     mv /marshall_* /etc && \
     /installers/install && \
     rm -rf /installers

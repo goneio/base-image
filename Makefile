@@ -515,6 +515,14 @@ docs:
 	composer install -d doc/
 	./doc/gen
 
+clean:
+	-@rm marshall/marshall*
+
 transmute:
 	chmod +x ./scripts/*.sh
 	./scripts/transmute-all.sh
+
+test-workflow:
+	$(MAKE) transmute
+	$(MAKE) clean
+	act -j PHP_CLI_74
