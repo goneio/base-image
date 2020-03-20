@@ -21,7 +21,7 @@ RUN chmod +x /installers/install && \
     /installers/install && \
     rm -rf /installers
 
-FROM marshall AS php-core
+FROM gone/marshall:latest AS php-core
 ARG PHP_PACKAGES
 COPY php-core/install-report.sh /usr/bin/install-report
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -40,7 +40,9 @@ RUN echo "APT::Acquire::Retries \"5\";" > /etc/apt/apt.conf.d/80-retries && \
         python3-software-properties \
         python3.5 python3.5-minimal libpython3.5-minimal \
         && \
-    apt-get autoremove -yqq && \
+    apt-get autoremove -yqq
+
+RUN which php && \
     curl -sS https://getcomposer.org/installer | php && \
     mv composer.phar /usr/local/bin/composer && \
     composer global require -q hirak/prestissimo && \
