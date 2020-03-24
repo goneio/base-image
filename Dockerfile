@@ -21,11 +21,10 @@ RUN chmod +x /installers/install && \
     /installers/install && \
     rm -rf /installers
 
-FROM marshall AS php-core
+FROM gone/marshall-x86_64:latest AS php-core
 ARG PHP_PACKAGES
 COPY php-core/install-report.sh /usr/bin/install-report
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN echo "Installing: $PHP_PACKAGES"
 RUN echo "APT::Acquire::Retries \"5\";" > /etc/apt/apt.conf.d/80-retries && \
     apt-get -qq update && \
     apt-get -yqq install --no-install-recommends \
@@ -34,16 +33,14 @@ RUN echo "APT::Acquire::Retries \"5\";" > /etc/apt/apt.conf.d/80-retries && \
         && \
     add-apt-repository -y ppa:ondrej/php && \
     apt-get -qq update && \
-    apt-get -yqq install --no-install-recommends $PHP_PACKAGES  &&\
+    apt-get -yqq install --no-install-recommends $PHP_PACKAGES && \
     apt-get remove -yqq \
         software-properties-common \
         python-apt-common \
         python3-software-properties \
         python3.5 python3.5-minimal libpython3.5-minimal \
         && \
-    apt-get autoremove -yqq
-
-RUN which php && \
+    apt-get autoremove -yqq && \
     curl -sS https://getcomposer.org/installer | php && \
     mv composer.phar /usr/local/bin/composer && \
     composer global require -q hirak/prestissimo && \
@@ -52,13 +49,13 @@ RUN which php && \
     chmod +x /usr/bin/install-report && \
     /usr/bin/install-report
 
-FROM php-core AS php-cli
+ARG CORE_FROM
+FROM $CORE_FROM AS php-cli
 RUN apt-get -qq update && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
 # Install a funky cool repl.
-RUN composer global require -q psy/psysh:@stable && \
+    composer global require -q psy/psysh:@stable && \
     ln -s /root/.composer/vendor/psy/psysh/bin/psysh /usr/local/bin/repl && \
     /usr/local/bin/repl -v
 
@@ -73,7 +70,7 @@ ONBUILD RUN composer install; exit 0
 ONBUILD RUN composer dumpautoload -o; exit 0
 ONBUILD RUN /usr/bin/install-report
 
-FROM php-core AS php-nginx
+FROM gone/p AS php-nginx
 ARG PHP_VERSION
 ARG PHP_MEMORY_LIMIT=128M
 ARG PHP_DATA_MAX_SIZE=1024M

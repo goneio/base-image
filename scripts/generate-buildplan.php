@@ -45,33 +45,34 @@ $tagPrefixes = [
 $phpPackagesAll = [
     "git",
     "mariadb-client",
-    "php-apcu",
-    "php-xdebug",
-    "php-bcmath",
-    "php-bz2",
-    "php-cli",
-    "php-curl",
-    "php-gd",
-    "php-imap",
-    "php-intl",
-    "php-json",
-    "php-ldap",
-    "php-mbstring",
-    "php-mcrypt",
+    "phpXX",
+    "phpXX-apcu",
+    "phpXX-xdebug",
+    "phpXX-bcmath",
+    "phpXX-bz2",
+    "phpXX-cli",
+    "phpXX-curl",
+    "phpXX-gd",
+    "phpXX-imap",
+    "phpXX-intl",
+    "phpXX-json",
+    "phpXX-ldap",
+    "phpXX-mbstring",
+    "phpXX-mcrypt",
     "php-sodium",
-    "php-memcache",
-    "php-memcached",
-    "php-mongodb",
-    "php-mysql",
-    "php-opcache",
-    "php-pgsql",
-    "php-phpdbg",
-    "php-pspell",
-    "php-redis",
-    "php-soap",
-    "php-sqlite",
-    "php-xml",
-    "php-zip",
+    "phpXX-memcache",
+    "phpXX-memcached",
+    "phpXX-mongodb",
+    "phpXX-mysql",
+    "phpXX-opcache",
+    "phpXX-pgsql",
+    "phpXX-phpdbg",
+    "phpXX-pspell",
+    "phpXX-redis",
+    "phpXX-soap",
+    "phpXX-sqlite",
+    "phpXX-xml",
+    "phpXX-zip",
     "postgresql-client"
 ];
 $phpPackages = [];
@@ -79,11 +80,12 @@ $envs = [];
 foreach($phpVersions as $phpVersion){
     $version = number_format($phpVersion,1);
     foreach ($phpPackagesAll as $package) {
-        $phpPackages[$version][$package] = str_replace("php-", "php{$version}-", $package);
+        $phpPackages[$version][$package] = str_replace("phpXX-", "php{$version}-", $package);
+        $phpPackages[$version]["phpXX"] = "php{$version}";
     }
 
     if($phpVersion > 7.2){
-        unset($phpPackages[$version]['php-mcrypt']);
+        unset($phpPackages[$version]['phpXX-mcrypt']);
     }else{
         unset($phpPackages[$version]['php-sodium']);
     }
@@ -91,7 +93,7 @@ foreach($phpVersions as $phpVersion){
     sort($phpPackages[$version]);
 
     $installString = implode(" ", $phpPackages[$version]);
-    $envs["PHP_" . $phpVersion] = $installString;
+    $envs["PHP_" . str_replace(".","",$phpVersion)] = $installString;
 }
 
 
@@ -113,6 +115,10 @@ $yaml["jobs"]["Marshall"]["strategy"]["matrix"]["platform"] = $platforms;
 $yaml["jobs"]["Marshall"]["strategy"]["matrix"]["registry"] = array_values($tagPrefixes);
 $yaml["jobs"]["Marshall"]["steps"] = $setupSteps;
 $yaml["jobs"]["Marshall"]["steps"][] = [
+    "name" => "Pull previous build",
+    "run" => "docker pull \${{ matrix.registry }}/marshall-\${{ matrix.platform }}:latest",
+];
+$yaml["jobs"]["Marshall"]["steps"][] = [
     "name" => "Setup Marshall",
     "run" => "git rev-parse --short HEAD > marshall/marshall_version ; date '+%Y-%m-%d %H:%M:%S' > marshall/marshall_build_date ; hostname > marshall/marshall_build_host"
 ];
@@ -127,40 +133,50 @@ $yaml["jobs"]["Marshall"]["steps"][] = [
 
 // Cores
 $yaml["jobs"]["Core"]["runs-on"] = $runsOn;
-$yaml["jobs"]["Core"]["needs"] = ["Marshall"];
+#$yaml["jobs"]["Core"]["needs"] = ["Marshall"];
 $yaml["jobs"]["Core"]["strategy"]["matrix"]["php"] = $phpVersions;
 $yaml["jobs"]["Core"]["strategy"]["matrix"]["platform"] = $platforms;
 $yaml["jobs"]["Core"]["strategy"]["matrix"]["registry"] = array_values($tagPrefixes);
 $yaml["jobs"]["Core"]["steps"] = $setupSteps;
 $yaml["jobs"]["Core"]["steps"][] = [
-    "name" => "Build Image \${{ matrix.registry }}/php-\${{ matrix.platform }}:core-\${{ matrix.php }}",
-    "run" => "docker build --target php-core --build-arg \"PHP_VERSION=\${{ matrix.php }}\" --build-arg \"PHP_PACKAGES=\$PHP_\${{ matrix.php }}\" -t \${{ matrix.registry }}/php-\${{ matrix.platform }}:core-\${{ matrix.php }} ."
+    "run" => "echo \"::set-output name=php_install_list_envvar::$(echo \"PHP_\${{ matrix.php }}\" | sed 's|\.||')\"",
+    "id" => "install_envvar",
+];
+$imageNameCore = "\${{ matrix.registry }}/php-\${{ matrix.platform }}:core-\${{ matrix.php }}";
+$yaml["jobs"]["Core"]["steps"][] = [
+    "name" => "Build Image $imageNameCore",
+    "run"  => "docker build --target php-core --build-arg \"PHP_VERSION=\${{ matrix.php }}\" --build-arg \"PHP_PACKAGES=\$\${{ steps.install_envvar.outputs.php_install_list_envvar }}\" -t $imageNameCore ."
 ];
 $yaml["jobs"]["Core"]["steps"][] = [
-    "name" => "Push Image \${{ matrix.registry }}/php-\${{ matrix.platform }}:core-\${{ matrix.php }}",
-    "run" => "docker push \${{ matrix.registry }}/php-\${{ matrix.platform }}:core-\${{ matrix.php }}"
+    "name" => "Push Image $imageNameCore",
+    "run"  => "docker push $imageNameCore"
 ];
 $yaml["jobs"]["Core"]["env"] = $envs;
 
 // End containers
 $yaml["jobs"]["PHP"]["runs-on"] = $runsOn;
-$yaml["jobs"]["PHP"]["needs"] = ["Core"];
+#$yaml["jobs"]["PHP"]["needs"] = ["Core"];
 $yaml["jobs"]["PHP"]["strategy"]["matrix"]["php"] = $phpVersions;
 $yaml["jobs"]["PHP"]["strategy"]["matrix"]["release"] = $releases;
 $yaml["jobs"]["PHP"]["strategy"]["matrix"]["platform"] = $platforms;
 $yaml["jobs"]["PHP"]["strategy"]["matrix"]["registry"] = array_values($tagPrefixes);
 $yaml["jobs"]["PHP"]["steps"] = $setupSteps;
-$yaml["jobs"]["PHP"]["steps"][] = [
-    "name" => "Setup",
-    "run" => "git rev-parse --short HEAD > marshall/marshall_version ; date '+%Y-%m-%d %H:%M:%S' > marshall/marshall_build_date ; hostname > marshall/marshall_build_host"
+$imageNameRelease = "\${{ matrix.registry }}/php-\${{ matrix.platform }}:\${{ matrix.release }}-\${{ matrix.php }}";
+$yaml["jobs"]["Marshall"]["steps"][] = [
+    "name" => "Pull previous build",
+    "run" => "docker pull $imageNameRelease",
 ];
 $yaml["jobs"]["PHP"]["steps"][] = [
-    "name" => "Build Image \${{ matrix.registry }}/php-\${{ matrix.platform }}:\${{ matrix.release }}-\${{ matrix.php }}",
-    "run" => "docker build --target php-\${{ matrix.release }} --build-arg \"PHP_VERSION=\${{ matrix.php }}\" --build-arg \"PHP_PACKAGES=\$PHP_\${{ matrix.php }}\" -t \${{ matrix.registry }}/php-\${{ matrix.platform }}:\${{ matrix.release }}-\${{ matrix.php }} ."
+    "name" => "Pull base image",
+    "run"  => "docker pull $imageNameCore",
 ];
 $yaml["jobs"]["PHP"]["steps"][] = [
-    "name" => "Push Image \${{ matrix.registry }}/php-\${{ matrix.platform }}:core-\${{ matrix.php }}",
-    "run" => "docker push \${{ matrix.registry }}/php-\${{ matrix.platform }}:core-\${{ matrix.php }}"
+    "name" => "Build Image: \${{ matrix.registry }}/php-\${{ matrix.platform }}:\${{ matrix.release }}-\${{ matrix.php }}",
+    "run"  => "docker build --target php-\${{ matrix.release }} --build-arg \"CORE_FROM=\" -t \${{ matrix.registry }}/php-\${{ matrix.platform }}:\${{ matrix.release }}-\${{ matrix.php }} ."
+];
+$yaml["jobs"]["PHP"]["steps"][] = [
+    "name" => "Push Image: $imageNameRelease",
+    "run"  => "docker push $imageNameRelease",
 ];
 
 $outputFile = __DIR__ . "/../.github/workflows/{$workflowFile}";

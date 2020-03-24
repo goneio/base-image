@@ -19,6 +19,8 @@ jobs:
     - name: 'Login to Registry: GitHub'
       run: docker login docker.pkg.github.com -u ${{secrets.DOCKER_GITHUB_USERNAME}}
         -p ${{secrets.DOCKER_GITHUB_PASSWORD}}
+    - name: Pull previous build
+      run: docker pull ${{ matrix.registry }}/marshall-${{ matrix.platform }}:latest
     - name: Setup Marshall
       run: git rev-parse --short HEAD > marshall/marshall_version ; date '+%Y-%m-%d
         %H:%M:%S' > marshall/marshall_build_date ; hostname > marshall/marshall_build_host
@@ -27,10 +29,11 @@ jobs:
         }}:latest .
     - name: Push Image ${{ matrix.registry }}/marshall-${{ matrix.platform }}:latest
       run: docker push ${{ matrix.registry }}/marshall-${{ matrix.platform }}:latest
+    - name: Pull previous build
+      run: docker pull ${{ matrix.registry }}/php-${{ matrix.platform }}:${{ matrix.release
+        }}-${{ matrix.php }}
   Core:
     runs-on: ubuntu-latest
-    needs:
-    - Marshall
     strategy:
       matrix:
         php:
@@ -46,25 +49,27 @@ jobs:
     - name: 'Login to Registry: GitHub'
       run: docker login docker.pkg.github.com -u ${{secrets.DOCKER_GITHUB_USERNAME}}
         -p ${{secrets.DOCKER_GITHUB_PASSWORD}}
+    - run: echo "::set-output name=php_install_list_envvar::$(echo "PHP_${{ matrix.php
+        }}" | sed 's|\.||')"
+      id: install_envvar
     - name: Build Image ${{ matrix.registry }}/php-${{ matrix.platform }}:core-${{
         matrix.php }}
       run: docker build --target php-core --build-arg "PHP_VERSION=${{ matrix.php
-        }}" --build-arg "PHP_PACKAGES=$PHP_${{ matrix.php }}" -t ${{ matrix.registry
-        }}/php-${{ matrix.platform }}:core-${{ matrix.php }} .
+        }}" --build-arg "PHP_PACKAGES=$${{ steps.install_envvar.outputs.php_install_list_envvar
+        }}" -t ${{ matrix.registry }}/php-${{ matrix.platform }}:core-${{ matrix.php
+        }} .
     - name: Push Image ${{ matrix.registry }}/php-${{ matrix.platform }}:core-${{
         matrix.php }}
       run: docker push ${{ matrix.registry }}/php-${{ matrix.platform }}:core-${{
         matrix.php }}
     env:
-      PHP_7.4: git mariadb-client php7.4-apcu php7.4-bcmath php7.4-bz2 php7.4-cli
-        php7.4-curl php7.4-gd php7.4-imap php7.4-intl php7.4-json php7.4-ldap php7.4-mbstring
-        php7.4-memcache php7.4-memcached php7.4-mongodb php7.4-mysql php7.4-opcache
-        php7.4-pgsql php7.4-phpdbg php7.4-pspell php7.4-redis php7.4-soap php7.4-sodium
+      PHP_74: git mariadb-client php-sodium php7.4 php7.4-apcu php7.4-bcmath php7.4-bz2
+        php7.4-cli php7.4-curl php7.4-gd php7.4-imap php7.4-intl php7.4-json php7.4-ldap
+        php7.4-mbstring php7.4-memcache php7.4-memcached php7.4-mongodb php7.4-mysql
+        php7.4-opcache php7.4-pgsql php7.4-phpdbg php7.4-pspell php7.4-redis php7.4-soap
         php7.4-sqlite php7.4-xdebug php7.4-xml php7.4-zip postgresql-client
   PHP:
     runs-on: ubuntu-latest
-    needs:
-    - Core
     strategy:
       matrix:
         php:
@@ -85,12 +90,11 @@ jobs:
     - name: Setup
       run: git rev-parse --short HEAD > marshall/marshall_version ; date '+%Y-%m-%d
         %H:%M:%S' > marshall/marshall_build_date ; hostname > marshall/marshall_build_host
-    - name: Build Image ${{ matrix.registry }}/php-${{ matrix.platform }}:${{ matrix.release
-        }}-${{ matrix.php }}
-      run: docker build --target php-${{ matrix.release }} --build-arg "PHP_VERSION=${{
-        matrix.php }}" --build-arg "PHP_PACKAGES=$PHP_${{ matrix.php }}" -t ${{ matrix.registry
+    - name: 'Build Image: ${{ matrix.registry }}/php-${{ matrix.platform }}:${{ matrix.release
+        }}-${{ matrix.php }}'
+      run: docker build --target php-${{ matrix.release }} -t ${{ matrix.registry
         }}/php-${{ matrix.platform }}:${{ matrix.release }}-${{ matrix.php }} .
-    - name: Push Image ${{ matrix.registry }}/php-${{ matrix.platform }}:core-${{
-        matrix.php }}
-      run: docker push ${{ matrix.registry }}/php-${{ matrix.platform }}:core-${{
-        matrix.php }}
+    - name: 'Push Image: ${{ matrix.registry }}/php-${{ matrix.platform }}:${{ matrix.release
+        }}-${{ matrix.php }}'
+      run: docker push ${{ matrix.registry }}/php-${{ matrix.platform }}:${{ matrix.release
+        }}-${{ matrix.php }}
