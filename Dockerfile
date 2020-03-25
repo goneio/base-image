@@ -21,10 +21,14 @@ RUN chmod +x /installers/install && \
     /installers/install && \
     rm -rf /installers
 
+# Latest is an intermediate buildstep.
+# hadolint ignore=DL3007
 FROM gone/marshall-x86_64:latest AS php-core
 ARG PHP_PACKAGES
 COPY php-core/install-report.sh /usr/bin/install-report
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+# Ignore apt pinning
+# hadolint ignore=DL3008
 RUN echo "APT::Acquire::Retries \"5\";" > /etc/apt/apt.conf.d/80-retries && \
     apt-get -qq update && \
     apt-get -yqq install --no-install-recommends \
@@ -50,6 +54,8 @@ RUN echo "APT::Acquire::Retries \"5\";" > /etc/apt/apt.conf.d/80-retries && \
     /usr/bin/install-report
 
 ARG CORE_FROM
+# build basis is dynamic.
+# hadolint ignore=DL3006
 FROM $CORE_FROM AS php-cli
 RUN apt-get -qq update && \
     apt-get clean && \
@@ -70,13 +76,18 @@ ONBUILD RUN composer install; exit 0
 ONBUILD RUN composer dumpautoload -o; exit 0
 ONBUILD RUN /usr/bin/install-report
 
-FROM gone/p AS php-nginx
+ARG CORE_FROM
+# build basis is dynamic.
+# hadolint ignore=DL3006
+FROM $CORE_FROM AS php-nginx
 ARG PHP_VERSION
 ARG PHP_MEMORY_LIMIT=128M
 ARG PHP_DATA_MAX_SIZE=1024M
 ENV PHPFPM_MAX_CHILDREN=25
 COPY php+nginx /conf
 
+# Ignore apt pinning
+# hadolint ignore=DL3008
 RUN apt-get -qq update && \
     apt-get -yqq install --no-install-recommends \
         lsb-core \
@@ -178,8 +189,14 @@ ONBUILD RUN composer install; exit 0
 ONBUILD RUN composer dumpautoload -o; exit 0
 ONBUILD RUN /usr/bin/install-report
 
-FROM php-core AS php-apache
+ARG CORE_FROM
+# build basis is dynamic.
+# hadolint ignore=DL3006
+FROM $CORE_FROM AS php-apache
 ARG PHP_VERSION
+
+# Ignore apt pinning
+# hadolint ignore=DL3008
 RUN apt-get -qq update && \
     apt-get -yqq install --no-install-recommends \
         apache2 \
@@ -234,6 +251,9 @@ ARG YARN_VERSION
 ARG PATH="/app/node_modules/.bin:${PATH}"
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+# DL3008: Ignore apt pinning
+# SC2043: Single cycled loop ignored.
+# hadolint ignore=DL3008,SC2043
 RUN mkdir ~/.gnupg && \
     echo "disable-ipv6" >> ~/.gnupg/dirmngr.conf && \
     apt-get -qq update && \
@@ -305,6 +325,8 @@ RUN mkdir ~/.gnupg && \
 
 FROM nodejs AS nodejs-compiler
 
+# Ignore apt pinning
+# hadolint ignore=DL3008
 RUN apt-get -qq update && \
     apt-get -yqq install --no-install-recommends \
         python \

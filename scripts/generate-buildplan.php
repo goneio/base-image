@@ -109,8 +109,22 @@ $yaml = [
     "jobs" => [],
 ];
 
+// Linter
+$yaml["jobs"]["LintDockerfile"]["runs-on"] = $runsOn;
+$yaml["jobs"]["LintDockerfile"]["name"] = "Lint Dockerfile";
+$yaml["jobs"]["LintDockerfile"]["steps"][] = [
+    "uses" => "actions/checkout@v1"
+];
+$yaml["jobs"]["LintDockerfile"]["steps"][] = [
+    "name" => "Hadolint",
+    "run" => "docker run --rm -i hadolint/hadolint < Dockerfile",
+];
+
 // Marshall
 $yaml["jobs"]["Marshall"]["runs-on"] = $runsOn;
+$yaml["jobs"]["Core"]["needs"] = ["LintDockerfile"];
+
+$yaml["jobs"]["Marshall"]["name"] = "Marshall multi-process running base image";
 $yaml["jobs"]["Marshall"]["strategy"]["matrix"]["platform"] = $platforms;
 $yaml["jobs"]["Marshall"]["strategy"]["matrix"]["registry"] = array_values($tagPrefixes);
 $yaml["jobs"]["Marshall"]["steps"] = $setupSteps;
@@ -133,7 +147,7 @@ $yaml["jobs"]["Marshall"]["steps"][] = [
 
 // Cores
 $yaml["jobs"]["Core"]["runs-on"] = $runsOn;
-#$yaml["jobs"]["Core"]["needs"] = ["Marshall"];
+$yaml["jobs"]["Core"]["needs"] = ["LintDockerfile", "Marshall"];
 $yaml["jobs"]["Core"]["strategy"]["matrix"]["php"] = $phpVersions;
 $yaml["jobs"]["Core"]["strategy"]["matrix"]["platform"] = $platforms;
 $yaml["jobs"]["Core"]["strategy"]["matrix"]["registry"] = array_values($tagPrefixes);
