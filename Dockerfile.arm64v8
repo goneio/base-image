@@ -1,5 +1,5 @@
 ARG CORE_FROM="ubuntu:latest"
-FROM ubuntu:bionic AS marshall
+FROM arm64v8/ubuntu AS marshall
 
 LABEL maintainer="Matthew Baggett <matthew@baggett.me>"
 
@@ -24,7 +24,7 @@ RUN chmod +x /installers/install && \
 
 # Latest is an intermediate buildstep.
 # hadolint ignore=DL3007
-FROM gone/marshall-x86_64:latest AS php-core
+FROM gone/marshall-arm64v8/ubuntu AS php-core
 ARG PHP_PACKAGES
 COPY php-core/install-report.sh /usr/bin/install-report
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]

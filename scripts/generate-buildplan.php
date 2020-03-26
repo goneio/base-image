@@ -22,24 +22,24 @@ $dir = __DIR__;
 require_once(__DIR__ . "/vendor/autoload.php");
 $platforms = [
     "x86_64",
-    #"arm64v8",
+    "arm64v8",
 ];
 $releases = [
-#    "apache",
-#    "nginx",
+    "apache",
+    "nginx",
     "cli"
 ];
 $phpVersions = [
-    #"5.6",
-    #"7.0",
-    #"7.1",
-    #"7.2",
-    #"7.3",
+    "5.6",
+    "7.0",
+    "7.1",
+    "7.2",
+    "7.3",
     "7.4",
 ];
 $tagPrefixes = [
     "Docker Hub" => "gone",
-#    "Github Registry" => "docker.pkg.github.com/goneio/base-image"
+    "Github Registry" => "docker.pkg.github.com/goneio/base-image"
 ];
 
 $phpPackagesAll = [
@@ -122,27 +122,27 @@ $yaml["jobs"]["LintDockerfile"]["steps"][] = [
 
 // Marshall
 $yaml["jobs"]["Marshall"]["runs-on"] = $runsOn;
-$yaml["jobs"]["Core"]["needs"] = ["LintDockerfile"];
-
+$yaml["jobs"]["Marshall"]["needs"] = ["LintDockerfile"];
+$marshallImageName = "\${{ matrix.registry }}/marshall-\${{ matrix.platform }}:latest";
 $yaml["jobs"]["Marshall"]["name"] = "Marshall multi-process running base image";
 $yaml["jobs"]["Marshall"]["strategy"]["matrix"]["platform"] = $platforms;
 $yaml["jobs"]["Marshall"]["strategy"]["matrix"]["registry"] = array_values($tagPrefixes);
 $yaml["jobs"]["Marshall"]["steps"] = $setupSteps;
 $yaml["jobs"]["Marshall"]["steps"][] = [
     "name" => "Pull previous build",
-    "run" => "docker pull \${{ matrix.registry }}/marshall-\${{ matrix.platform }}:latest",
+    "run" => "docker pull {$marshallImageName} || true",
 ];
 $yaml["jobs"]["Marshall"]["steps"][] = [
     "name" => "Setup Marshall",
     "run" => "git rev-parse --short HEAD > marshall/marshall_version ; date '+%Y-%m-%d %H:%M:%S' > marshall/marshall_build_date ; hostname > marshall/marshall_build_host"
 ];
 $yaml["jobs"]["Marshall"]["steps"][] = [
-    "name" => "Build Image \${{ matrix.registry }}/marshall-\${{ matrix.platform }}:latest",
-    "run" => "docker build --target marshall -t \${{ matrix.registry }}/marshall-\${{ matrix.platform }}:latest ."
+    "name" => "Build Image {$marshallImageName}",
+    "run" => "docker build --target marshall -t {$marshallImageName} --build-arg CORE_FROM='irrelevent' . "
 ];
 $yaml["jobs"]["Marshall"]["steps"][] = [
-    "name" => "Push Image \${{ matrix.registry }}/marshall-\${{ matrix.platform }}:latest",
-    "run" => "docker push \${{ matrix.registry }}/marshall-\${{ matrix.platform }}:latest"
+    "name" => "Push Image {$marshallImageName}",
+    "run" => "docker push {$marshallImageName}"
 ];
 
 // Cores
@@ -158,6 +158,14 @@ $yaml["jobs"]["Core"]["steps"][] = [
 ];
 $imageNameCore = "\${{ matrix.registry }}/php-\${{ matrix.platform }}:core-\${{ matrix.php }}";
 $yaml["jobs"]["Core"]["steps"][] = [
+    "name" => "Pull base image (marshall)",
+    "run" => "docker pull {$marshallImageName} || true",
+];
+$yaml["jobs"]["Core"]["steps"][] = [
+    "name" => "Pull Previous Image",
+    "run"  => "docker pull $imageNameCore || true",
+];
+$yaml["jobs"]["Core"]["steps"][] = [
     "name" => "Build Image $imageNameCore",
     "run"  => "docker build --target php-core --build-arg \"PHP_VERSION=\${{ matrix.php }}\" --build-arg \"PHP_PACKAGES=\$\${{ steps.install_envvar.outputs.php_install_list_envvar }}\" -t $imageNameCore ."
 ];
@@ -169,24 +177,24 @@ $yaml["jobs"]["Core"]["env"] = $envs;
 
 // End containers
 $yaml["jobs"]["PHP"]["runs-on"] = $runsOn;
-#$yaml["jobs"]["PHP"]["needs"] = ["Core"];
+$yaml["jobs"]["PHP"]["needs"] = ["LintDockerfile", "Marshall", "Core"];
 $yaml["jobs"]["PHP"]["strategy"]["matrix"]["php"] = $phpVersions;
 $yaml["jobs"]["PHP"]["strategy"]["matrix"]["release"] = $releases;
 $yaml["jobs"]["PHP"]["strategy"]["matrix"]["platform"] = $platforms;
 $yaml["jobs"]["PHP"]["strategy"]["matrix"]["registry"] = array_values($tagPrefixes);
 $yaml["jobs"]["PHP"]["steps"] = $setupSteps;
 $imageNameRelease = "\${{ matrix.registry }}/php-\${{ matrix.platform }}:\${{ matrix.release }}-\${{ matrix.php }}";
-$yaml["jobs"]["Marshall"]["steps"][] = [
+$yaml["jobs"]["PHP"]["steps"][] = [
     "name" => "Pull previous build",
-    "run" => "docker pull $imageNameRelease",
+    "run" => "docker pull $imageNameRelease || true",
 ];
 $yaml["jobs"]["PHP"]["steps"][] = [
     "name" => "Pull base image",
-    "run"  => "docker pull $imageNameCore",
+    "run"  => "docker pull $imageNameCore || true",
 ];
 $yaml["jobs"]["PHP"]["steps"][] = [
     "name" => "Build Image: \${{ matrix.registry }}/php-\${{ matrix.platform }}:\${{ matrix.release }}-\${{ matrix.php }}",
-    "run"  => "docker build --target php-\${{ matrix.release }} --build-arg \"CORE_FROM=\" -t \${{ matrix.registry }}/php-\${{ matrix.platform }}:\${{ matrix.release }}-\${{ matrix.php }} ."
+    "run"  => "docker build --target php-\${{ matrix.release }} --build-arg \"CORE_FROM=${imageNameCore}\" -t ${imageNameRelease} ."
 ];
 $yaml["jobs"]["PHP"]["steps"][] = [
     "name" => "Push Image: $imageNameRelease",
