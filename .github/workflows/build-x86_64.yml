@@ -2,7 +2,7 @@ name: Gone.io/PHP (on x86_64)
 on:
   push: 
   schedule:
-    cron: 0 4 * * TUE
+  - cron: 0 4 * * TUE
 jobs:
   LintDockerfile:
     runs-on: ubuntu-latest

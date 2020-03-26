@@ -103,9 +103,9 @@ $yaml = [
     "name" => "Gone.io/PHP (on {$arch})",
     "on" => [
         "push" => true,
-        "schedule" => [
-            "cron" => "0 4 * * TUE",
-        ]
+        "schedule" => [[
+            "cron" => '0 4 * * TUE',
+        ]]
     ],
     "jobs" => [],
 ];
