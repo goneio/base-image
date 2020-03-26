@@ -212,4 +212,4 @@ $buff = ob_get_contents();
 ob_end_clean();
 file_put_contents($outputFile, $buff);
 
-system("sed -i 's|push: \"true\"|push\: |g' $outputFile");
+system("sed -i 's|push: true|push\: |g' $outputFile");

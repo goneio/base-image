@@ -1,6 +1,6 @@
 name: Gone.io/PHP (on arm64v8)
 on:
-  push: true
+  push: 
   schedule:
     cron: 0 4 * * TUE
 jobs:
