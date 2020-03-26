@@ -1,4 +1,4 @@
-name: Gone.io/PHP
+name: Gone.io/PHP (on x86_64)
 on:
   push: true
   schedule:

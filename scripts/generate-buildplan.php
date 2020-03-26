@@ -96,10 +96,11 @@ foreach($phpVersions as $phpVersion){
     $envs["PHP_" . str_replace(".","",$phpVersion)] = $installString;
 }
 
+$arch = "x86_64";
 
-$workflowFile = "build.yml";
+$workflowFile = "build-{$arch}.yml";
 $yaml = [
-    "name" => "Gone.io/PHP",
+    "name" => "Gone.io/PHP (on {$arch})",
     "on" => [
         "push" => true,
         "schedule" => [
@@ -210,3 +211,5 @@ system($commandToClean);
 $buff = ob_get_contents();
 ob_end_clean();
 file_put_contents($outputFile, $buff);
+
+system("sed -i 's|push: \"true\"|push\: |g' $outputFile");
