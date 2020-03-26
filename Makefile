@@ -515,16 +515,6 @@ docs:
 	composer install -d doc/
 	./doc/gen
 
-clean:
-	-@rm marshall/marshall*
-
-transmute:
-	chmod +x ./scripts/*.sh
+generate:
 	./scripts/transmute-all.sh
-	./scripts/generate-buildplan.php
-	head -n 100 .github/workflows/build.yml
 
-test-workflow:
-	$(MAKE) transmute
-	$(MAKE) clean
-	act

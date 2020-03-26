@@ -6,7 +6,7 @@ on:
 jobs:
   LintDockerfile:
     runs-on: ubuntu-latest
-    name: Lint Dockerfile
+    name: Lint Dockerfile (on x86_64)
     steps:
     - uses: actions/checkout@v1
     - name: Hadolint
@@ -43,6 +43,7 @@ jobs:
     - name: Push Image ${{ matrix.registry }}/marshall-${{ matrix.platform }}:latest
       run: docker push ${{ matrix.registry }}/marshall-${{ matrix.platform }}:latest
   Core:
+    name: PHP ${{ matrix.platform }} Core (on x86_64)
     runs-on: ubuntu-latest
     needs:
     - LintDockerfile
@@ -120,6 +121,7 @@ jobs:
         php7.4-opcache php7.4-pgsql php7.4-phpdbg php7.4-pspell php7.4-redis php7.4-soap
         php7.4-sqlite php7.4-xdebug php7.4-xml php7.4-zip postgresql-client
   PHP:
+    name: PHP ${{ matrix.platform }} ${{ matrix.release }} (on x86_64)
     runs-on: ubuntu-latest
     needs:
     - LintDockerfile

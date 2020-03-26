@@ -112,7 +112,7 @@ $yaml = [
 
 // Linter
 $yaml["jobs"]["LintDockerfile"]["runs-on"] = $runsOn;
-$yaml["jobs"]["LintDockerfile"]["name"] = "Lint Dockerfile";
+$yaml["jobs"]["LintDockerfile"]["name"] = "Lint Dockerfile (on x86_64)";
 $yaml["jobs"]["LintDockerfile"]["steps"][] = [
     "uses" => "actions/checkout@v1"
 ];
@@ -147,6 +147,7 @@ $yaml["jobs"]["Marshall"]["steps"][] = [
 ];
 
 // Cores
+$yaml["jobs"]["Core"]["name"] = "PHP \${{ matrix.platform }} Core (on x86_64)";
 $yaml["jobs"]["Core"]["runs-on"] = $runsOn;
 $yaml["jobs"]["Core"]["needs"] = ["LintDockerfile", "Marshall"];
 $yaml["jobs"]["Core"]["strategy"]["matrix"]["php"] = $phpVersions;
@@ -177,6 +178,7 @@ $yaml["jobs"]["Core"]["steps"][] = [
 $yaml["jobs"]["Core"]["env"] = $envs;
 
 // End containers
+$yaml["jobs"]["PHP"]["name"] = "PHP \${{ matrix.platform }} \${{ matrix.release }} (on x86_64)";
 $yaml["jobs"]["PHP"]["runs-on"] = $runsOn;
 $yaml["jobs"]["PHP"]["needs"] = ["LintDockerfile", "Marshall", "Core"];
 $yaml["jobs"]["PHP"]["strategy"]["matrix"]["php"] = $phpVersions;
