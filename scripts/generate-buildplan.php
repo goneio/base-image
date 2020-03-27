@@ -154,7 +154,7 @@ $yaml["jobs"]["Marshall"]["steps"][] = [
     "name" => "Build Image {$marshallImageName}",
     "run" => "docker build -f Dockerfile.Marshall --target marshall -t {$marshallImageName} --build-arg CORE_FROM=\$BASE_IMAGE_\${{ matrix.platform }} . "
 ];
-$yaml["jobs"]["Marshall"]["steps"] += $prePushSteps;
+$yaml["jobs"]["Marshall"]["steps"] = array_merge($yaml["jobs"]["Marshall"]["steps"], $prePushSteps);
 foreach($tagPrefixes as $registryName => $prefix) {
     $yaml["jobs"]["Marshall"]["steps"][] = [
         "name" => "Tag Image for $registryName",
@@ -242,6 +242,17 @@ foreach($tagPrefixes as $registryName => $prefix) {
         "run" => "docker push {$prefix}/{$imageNameRelease}"
     ];
 }
+
+
+$aliases = [];
+foreach($phpVersions as $phpVersion){
+    $aliases[""]
+}
+
+\Kint::dump($aliases);exit;
+
+$yaml["jobs"]["Aliases"]["name"] = "Apply Aliases/Tags for common versions";
+$yaml["jobs"]["PHP"]["needs"] = ["Marshall", "PHP"];
 
 
 #unset($yaml['jobs']['Marshall']['needs'], $yaml['jobs']['Core']['needs'], $yaml['jobs']['PHP']['needs'], );
