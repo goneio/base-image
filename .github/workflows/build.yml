@@ -5,7 +5,6 @@ on:
   - cron: 0 4 * * TUE
 jobs:
   LintDockerfile:
-    runs-on: ubuntu-latest
     name: Lint Dockerfile
     steps:
     - uses: actions/checkout@v1
@@ -15,8 +14,8 @@ jobs:
       run: docker run --rm -i hadolint/hadolint < Dockerfile.Marshall
     - name: Hadolint PHP
       run: docker run --rm -i hadolint/hadolint < Dockerfile.PHP
-  Marshall:
     runs-on: ubuntu-latest
+  Marshall:
     needs:
     - LintDockerfile
     name: Marshall ${{ matrix.platform }} ${{ matrix.registry }}
@@ -59,8 +58,8 @@ jobs:
     - name: Push Image to Github Registry
       run: docker push docker.pkg.github.com/goneio/base-image/marshall:${{ matrix.platform
         }}
-  Core:
     runs-on: ubuntu-latest
+  Core:
     needs:
     - Marshall
     strategy:
@@ -139,8 +138,8 @@ jobs:
     - name: Push Image to Github Registry
       run: docker push docker.pkg.github.com/goneio/base-image/php:core-${{ matrix.php
         }}-${{ matrix.platform }}
-  PHP:
     runs-on: ubuntu-latest
+  PHP:
     needs:
     - Core
     strategy:
@@ -192,6 +191,7 @@ jobs:
     - name: Push Image to Github Registry
       run: docker push docker.pkg.github.com/goneio/base-image/bi/php:${{ matrix.release
         }}-${{ matrix.php }}-${{ matrix.platform }}
+    runs-on: ubuntu-latest
   Aliases:
     name: Apply Aliases/Tags for common versions
     needs:
@@ -463,3 +463,4 @@ jobs:
       run: docker tag docker.pkg.github.com/goneio/base-image/php:core-7.4 docker.pkg.github.com/goneio/base-image/php:core-7.4-x86_64
     - name: Push alias docker.pkg.github.com/goneio/base-image/php:core-7.4
       run: docker push docker.pkg.github.com/goneio/base-image/php:core-7.4
+    runs-on: ubuntu-latest

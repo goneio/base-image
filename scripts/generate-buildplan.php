@@ -116,7 +116,6 @@ $yaml = [
 ];
 
 // Linter
-$yaml["jobs"]["LintDockerfile"]["runs-on"] = $runsOn;
 $yaml["jobs"]["LintDockerfile"]["name"] = "Lint Dockerfile";
 $yaml["jobs"]["LintDockerfile"]["steps"][] = [
     "uses" => "actions/checkout@v1"
@@ -129,7 +128,6 @@ foreach(["Core", "Marshall", "PHP"] as $dockerfile) {
 }
 
 // Marshall
-$yaml["jobs"]["Marshall"]["runs-on"] = $runsOn;
 $yaml["jobs"]["Marshall"]["needs"] = ["LintDockerfile"];
 $marshallImageName = "marshall:\${{ matrix.platform }}";
 $yaml["jobs"]["Marshall"]["name"] = "Marshall \${{ matrix.platform }} \${{ matrix.registry }}";
@@ -170,7 +168,6 @@ foreach($tagPrefixes as $registryName => $prefix) {
 
 // Cores
 #$yaml["jobs"]["Core"]["name"] = "PHP \${{ matrix.platform }} Core (on x86_64)";
-$yaml["jobs"]["Core"]["runs-on"] = $runsOn;
 $yaml["jobs"]["Core"]["needs"] = ["Marshall"];
 $yaml["jobs"]["Core"]["strategy"]["matrix"]["php"] = $phpVersions;
 $yaml["jobs"]["Core"]["strategy"]["matrix"]["platform"] = array_keys($platforms);
@@ -209,7 +206,6 @@ foreach($tagPrefixes as $registryName => $prefix) {
 
 // End containers
 #$yaml["jobs"]["PHP"]["name"] = "PHP \${{ matrix.platform }} \${{ matrix.release }} (on x86_64)";
-$yaml["jobs"]["PHP"]["runs-on"] = $runsOn;
 $yaml["jobs"]["PHP"]["needs"] = ["Core"];
 $yaml["jobs"]["PHP"]["strategy"]["matrix"]["php"] = $phpVersions;
 $yaml["jobs"]["PHP"]["strategy"]["matrix"]["release"] = $releases;
@@ -273,6 +269,10 @@ foreach($aliases as $from => $to) {
 #unset($yaml['jobs']['Marshall']['needs'], $yaml['jobs']['Core']['needs'], $yaml['jobs']['PHP']['needs'], );
 #unset($yaml['jobs']['Core']);
 #unset($yaml['jobs']['PHP']);
+
+foreach($yaml['jobs'] as &$job){
+    $job['runs-on'] = $runsOn;
+}
 
 $outputFile = __DIR__ . "/../.github/workflows/{$workflowFile}";
 file_put_contents($outputFile, Yaml::dump($yaml, $yamlInline, $yamlIndent, $yamlFlags));
