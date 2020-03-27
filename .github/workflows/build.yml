@@ -1,0 +1,82 @@
+name: Gone.io Base Images
+on:
+  push: 
+  schedule:
+  - cron: 0 4 * * TUE
+jobs:
+  LintDockerfile:
+    runs-on: ubuntu-latest
+    name: Lint Dockerfile (on x86_64)
+    steps:
+    - uses: actions/checkout@v1
+    - name: Hadolint Core
+      run: docker run --rm -i hadolint/hadolint < Dockerfile.Core
+    - name: Hadolint Marshall
+      run: docker run --rm -i hadolint/hadolint < Dockerfile.Marshall
+    - name: Hadolint PHP
+      run: docker run --rm -i hadolint/hadolint < Dockerfile.PHP
+  Marshall:
+    runs-on: ubuntu-latest
+    name: Marshall ${{ matrix.platform }} ${{ matrix.registry }}
+    strategy:
+      matrix:
+        platform:
+        - x86_64
+        registry:
+        - gone
+    env:
+      BASE_IMAGE_x86_64: ubuntu:bionic
+    steps:
+    - uses: actions/checkout@v1
+    - name: Pull base image
+      run: docker pull ubuntu:bionic || true
+    - name: Pull previous build
+      run: docker pull ${{ matrix.registry }}/marshall-${{ matrix.platform }}:latest
+        || true
+    - name: Setup Marshall
+      run: git rev-parse --short HEAD > marshall/marshall_version ; date '+%Y-%m-%d'
+        > marshall/marshall_build_date ; hostname > marshall/marshall_build_host
+    - name: Build Image ${{ matrix.registry }}/marshall-${{ matrix.platform }}:latest
+      run: 'docker build -f Dockerfile.Marshall --target marshall -t ${{ matrix.registry
+        }}/marshall-${{ matrix.platform }}:latest --build-arg CORE_FROM=$BASE_IMAGE_${{
+        matrix.platform }} . '
+    - name: Push Image ${{ matrix.registry }}/marshall-${{ matrix.platform }}:latest
+      run: docker push ${{ matrix.registry }}/marshall-${{ matrix.platform }}:latest
+  Core:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php:
+        - "7.0"
+        platform:
+        - x86_64
+        registry:
+        - gone
+    steps:
+    - uses: actions/checkout@v1
+    - run: echo "::set-output name=php_install_list_envvar::$(echo "PHP_${{ matrix.php
+        }}" | sed 's|\.||')"
+      id: install_envvar
+    - name: Pull base image (marshall)
+      run: docker pull ${{ matrix.registry }}/marshall-${{ matrix.platform }}:latest
+        || true
+    - name: Pull Previous Image
+      run: docker pull ${{ matrix.registry }}/php-${{ matrix.platform }}:core-${{
+        matrix.php }} || true
+    - name: Build Image ${{ matrix.registry }}/php-${{ matrix.platform }}:core-${{
+        matrix.php }}
+      run: docker build -f Dockerfile.Core --target php-core --build-arg "PHP_VERSION=${{
+        matrix.php }}" --build-arg "PHP_PACKAGES=$${{ steps.install_envvar.outputs.php_install_list_envvar
+        }}" --build-arg "CORE_FROM=${{ matrix.registry }}/marshall-${{ matrix.platform
+        }}:latest" -t ${{ matrix.registry }}/php-${{ matrix.platform }}:core-${{ matrix.php
+        }} .
+    - name: Push Image ${{ matrix.registry }}/php-${{ matrix.platform }}:core-${{
+        matrix.php }}
+      run: docker push ${{ matrix.registry }}/php-${{ matrix.platform }}:core-${{
+        matrix.php }}
+    env:
+      PHP_70: git mariadb-client php7.0 php7.0-apcu php7.0-bcmath php7.0-bz2 php7.0-cli
+        php7.0-curl php7.0-gd php7.0-imap php7.0-intl php7.0-json php7.0-ldap php7.0-mbstring
+        php7.0-mcrypt php7.0-memcache php7.0-memcached php7.0-mongodb php7.0-mysql
+        php7.0-opcache php7.0-pgsql php7.0-phpdbg php7.0-pspell php7.0-redis php7.0-soap
+        php7.0-sqlite php7.0-xdebug php7.0-xml php7.0-zip postgresql-client

@@ -9,7 +9,11 @@ $runsOn = "ubuntu-latest";
 $setupSteps = [
     [
         "uses" => "actions/checkout@v1"
-    ],[
+    ]
+];
+
+$prePushSteps = [
+    [
         "name" => "Login to Registry: Docker Hub",
         "run" => "docker login -u \${{secrets.DOCKER_HUB_USERNAME}} -p \${{secrets.DOCKER_HUB_PASSWORD}}",
     ],[
@@ -21,25 +25,25 @@ $dir = __DIR__;
 
 require_once(__DIR__ . "/vendor/autoload.php");
 $platforms = [
-    "x86_64",
-    "arm64v8",
+    "x86_64" => "ubuntu:bionic",
+    //"arm64v8" => "arm64v8/ubuntu",
 ];
 $releases = [
-    "apache",
-    "nginx",
+    //"apache",
+    //"nginx",
     "cli"
 ];
 $phpVersions = [
-    "5.6",
+    //"5.6",
     "7.0",
-    "7.1",
-    "7.2",
-    "7.3",
-    "7.4",
+    //"7.1",
+    //"7.2",
+    //"7.3",
+    //"7.4",
 ];
 $tagPrefixes = [
     "Docker Hub" => "gone",
-    "Github Registry" => "docker.pkg.github.com/goneio/base-image"
+    //"Github Registry" => "docker.pkg.github.com/goneio/base-image"
 ];
 
 $phpPackagesAll = [
@@ -96,11 +100,9 @@ foreach($phpVersions as $phpVersion){
     $envs["PHP_" . str_replace(".","",$phpVersion)] = $installString;
 }
 
-$arch = "x86_64";
-
-$workflowFile = "build-{$arch}.yml";
+$workflowFile = "build.yml";
 $yaml = [
-    "name" => "Gone.io/PHP (on {$arch})",
+    "name" => "Gone.io Base Images",
     "on" => [
         "push" => true,
         "schedule" => [[
@@ -116,42 +118,52 @@ $yaml["jobs"]["LintDockerfile"]["name"] = "Lint Dockerfile (on x86_64)";
 $yaml["jobs"]["LintDockerfile"]["steps"][] = [
     "uses" => "actions/checkout@v1"
 ];
-$yaml["jobs"]["LintDockerfile"]["steps"][] = [
-    "name" => "Hadolint",
-    "run" => "docker run --rm -i hadolint/hadolint < Dockerfile",
-];
+foreach(["Core", "Marshall", "PHP"] as $dockerfile) {
+    $yaml["jobs"]["LintDockerfile"]["steps"][] = [
+        "name" => "Hadolint {$dockerfile}",
+        "run" => "docker run --rm -i hadolint/hadolint < Dockerfile.{$dockerfile}",
+    ];
+}
 
 // Marshall
 $yaml["jobs"]["Marshall"]["runs-on"] = $runsOn;
 $yaml["jobs"]["Marshall"]["needs"] = ["LintDockerfile"];
 $marshallImageName = "\${{ matrix.registry }}/marshall-\${{ matrix.platform }}:latest";
-$yaml["jobs"]["Marshall"]["name"] = "Marshall multi-process running base image";
-$yaml["jobs"]["Marshall"]["strategy"]["matrix"]["platform"] = $platforms;
+$yaml["jobs"]["Marshall"]["name"] = "Marshall \${{ matrix.platform }} \${{ matrix.registry }}";
+$yaml["jobs"]["Marshall"]["strategy"]["matrix"]["platform"] = array_keys($platforms);
 $yaml["jobs"]["Marshall"]["strategy"]["matrix"]["registry"] = array_values($tagPrefixes);
+foreach($platforms as $platformName => $platformBaseImage) {
+    $yaml["jobs"]["Marshall"]["env"]["BASE_IMAGE_" . $platformName] = $platformBaseImage;
+}
 $yaml["jobs"]["Marshall"]["steps"] = $setupSteps;
+$yaml["jobs"]["Marshall"]["steps"][] = [
+    "name" => "Pull base image",
+    "run" => "docker pull {$platformBaseImage} || true",
+];
 $yaml["jobs"]["Marshall"]["steps"][] = [
     "name" => "Pull previous build",
     "run" => "docker pull {$marshallImageName} || true",
 ];
 $yaml["jobs"]["Marshall"]["steps"][] = [
     "name" => "Setup Marshall",
-    "run" => "git rev-parse --short HEAD > marshall/marshall_version ; date '+%Y-%m-%d %H:%M:%S' > marshall/marshall_build_date ; hostname > marshall/marshall_build_host"
+    "run" => "git rev-parse --short HEAD > marshall/marshall_version ; date '+%Y-%m-%d' > marshall/marshall_build_date ; hostname > marshall/marshall_build_host"
 ];
 $yaml["jobs"]["Marshall"]["steps"][] = [
     "name" => "Build Image {$marshallImageName}",
-    "run" => "docker build --target marshall -t {$marshallImageName} --build-arg CORE_FROM='irrelevent' . "
+    "run" => "docker build -f Dockerfile.Marshall --target marshall -t {$marshallImageName} --build-arg CORE_FROM=\$BASE_IMAGE_\${{ matrix.platform }} . "
 ];
+$yaml["jobs"]["Marshall"]["steps"] += $prePushSteps;
 $yaml["jobs"]["Marshall"]["steps"][] = [
     "name" => "Push Image {$marshallImageName}",
     "run" => "docker push {$marshallImageName}"
 ];
 
 // Cores
-$yaml["jobs"]["Core"]["name"] = "PHP \${{ matrix.platform }} Core (on x86_64)";
+#$yaml["jobs"]["Core"]["name"] = "PHP \${{ matrix.platform }} Core (on x86_64)";
 $yaml["jobs"]["Core"]["runs-on"] = $runsOn;
-$yaml["jobs"]["Core"]["needs"] = ["LintDockerfile", "Marshall"];
+$yaml["jobs"]["Core"]["needs"] = ["Marshall"];
 $yaml["jobs"]["Core"]["strategy"]["matrix"]["php"] = $phpVersions;
-$yaml["jobs"]["Core"]["strategy"]["matrix"]["platform"] = $platforms;
+$yaml["jobs"]["Core"]["strategy"]["matrix"]["platform"] = array_keys($platforms);
 $yaml["jobs"]["Core"]["strategy"]["matrix"]["registry"] = array_values($tagPrefixes);
 $yaml["jobs"]["Core"]["steps"] = $setupSteps;
 $yaml["jobs"]["Core"]["steps"][] = [
@@ -169,8 +181,9 @@ $yaml["jobs"]["Core"]["steps"][] = [
 ];
 $yaml["jobs"]["Core"]["steps"][] = [
     "name" => "Build Image $imageNameCore",
-    "run"  => "docker build --target php-core --build-arg \"PHP_VERSION=\${{ matrix.php }}\" --build-arg \"PHP_PACKAGES=\$\${{ steps.install_envvar.outputs.php_install_list_envvar }}\" -t $imageNameCore ."
+    "run"  => "docker build -f Dockerfile.Core --target php-core --build-arg \"PHP_VERSION=\${{ matrix.php }}\" --build-arg \"PHP_PACKAGES=\$\${{ steps.install_envvar.outputs.php_install_list_envvar }}\" --build-arg \"CORE_FROM={$marshallImageName}\" -t $imageNameCore ."
 ];
+$yaml["jobs"]["Core"]["steps"] += $prePushSteps;
 $yaml["jobs"]["Core"]["steps"][] = [
     "name" => "Push Image $imageNameCore",
     "run"  => "docker push $imageNameCore"
@@ -178,12 +191,12 @@ $yaml["jobs"]["Core"]["steps"][] = [
 $yaml["jobs"]["Core"]["env"] = $envs;
 
 // End containers
-$yaml["jobs"]["PHP"]["name"] = "PHP \${{ matrix.platform }} \${{ matrix.release }} (on x86_64)";
+#$yaml["jobs"]["PHP"]["name"] = "PHP \${{ matrix.platform }} \${{ matrix.release }} (on x86_64)";
 $yaml["jobs"]["PHP"]["runs-on"] = $runsOn;
-$yaml["jobs"]["PHP"]["needs"] = ["LintDockerfile", "Marshall", "Core"];
+$yaml["jobs"]["PHP"]["needs"] = ["Core"];
 $yaml["jobs"]["PHP"]["strategy"]["matrix"]["php"] = $phpVersions;
 $yaml["jobs"]["PHP"]["strategy"]["matrix"]["release"] = $releases;
-$yaml["jobs"]["PHP"]["strategy"]["matrix"]["platform"] = $platforms;
+$yaml["jobs"]["PHP"]["strategy"]["matrix"]["platform"] = array_keys($platforms);
 $yaml["jobs"]["PHP"]["strategy"]["matrix"]["registry"] = array_values($tagPrefixes);
 $yaml["jobs"]["PHP"]["steps"] = $setupSteps;
 $imageNameRelease = "\${{ matrix.registry }}/php-\${{ matrix.platform }}:\${{ matrix.release }}-\${{ matrix.php }}";
@@ -197,12 +210,17 @@ $yaml["jobs"]["PHP"]["steps"][] = [
 ];
 $yaml["jobs"]["PHP"]["steps"][] = [
     "name" => "Build Image: \${{ matrix.registry }}/php-\${{ matrix.platform }}:\${{ matrix.release }}-\${{ matrix.php }}",
-    "run"  => "docker build --target php-\${{ matrix.release }} --build-arg \"CORE_FROM=${imageNameCore}\" -t ${imageNameRelease} ."
+    "run"  => "docker build -f Dockerfile.PHP --target php-\${{ matrix.release }} --build-arg \"CORE_FROM=${imageNameCore}\" -t ${imageNameRelease} ."
 ];
+$yaml["jobs"]["PHP"]["steps"] += $prePushSteps;
 $yaml["jobs"]["PHP"]["steps"][] = [
     "name" => "Push Image: $imageNameRelease",
     "run"  => "docker push $imageNameRelease",
 ];
+
+unset($yaml['jobs']['Marshall']['needs'], $yaml['jobs']['Core']['needs'], $yaml['jobs']['PHP']['needs'], );
+#unset($yaml['jobs']['Core']);
+unset($yaml['jobs']['PHP']);
 
 $outputFile = __DIR__ . "/../.github/workflows/{$workflowFile}";
 file_put_contents($outputFile, Yaml::dump($yaml, $yamlInline, $yamlIndent, $yamlFlags));
