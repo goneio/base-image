@@ -15,7 +15,7 @@ $setupSteps = [
     ]
 ];
 
-$prePushSteps = [
+$loginSteps = [
     [
         "name" => "Login to Registry: Docker Hub",
         "run" => "docker login -u \${{secrets.DOCKER_HUB_USERNAME}} -p \${{secrets.DOCKER_HUB_PASSWORD}}",
@@ -135,7 +135,7 @@ $yaml["jobs"]["Marshall"]["strategy"]["matrix"]["platform"] = array_keys($platfo
 foreach($platforms as $platformName => $platformBaseImage) {
     $yaml["jobs"]["Marshall"]["env"]["BASE_IMAGE_" . $platformName] = $platformBaseImage;
 }
-$yaml["jobs"]["Marshall"]["steps"] = $setupSteps;
+$yaml["jobs"]["Marshall"]["steps"] = array_merge($setupSteps, $loginSteps);
 $yaml["jobs"]["Marshall"]["steps"][] = [
     "name" => "Pull base image",
     "run" => "docker pull {$platformBaseImage} || true",
@@ -152,7 +152,6 @@ $yaml["jobs"]["Marshall"]["steps"][] = [
     "name" => "Build Image {$marshallImageName}",
     "run" => "docker build -f Dockerfile.Marshall --target marshall -t {$marshallImageName} --build-arg CORE_FROM=\$BASE_IMAGE_\${{ matrix.platform }} . "
 ];
-$yaml["jobs"]["Marshall"]["steps"] = array_merge($yaml["jobs"]["Marshall"]["steps"], $prePushSteps);
 foreach($tagPrefixes as $registryName => $prefix) {
     $yaml["jobs"]["Marshall"]["steps"][] = [
         "name" => "Tag Image for: {$registryName}",
@@ -172,7 +171,7 @@ $yaml["jobs"]["Core"]["needs"] = ["Marshall"];
 $yaml["jobs"]["Core"]["strategy"]["matrix"]["php"] = $phpVersions;
 $yaml["jobs"]["Core"]["strategy"]["matrix"]["platform"] = array_keys($platforms);
 $yaml["jobs"]["Core"]["env"] = $envs;
-$yaml["jobs"]["Core"]["steps"] = $setupSteps;
+$yaml["jobs"]["Core"]["steps"] = array_merge($setupSteps, $loginSteps);
 $yaml["jobs"]["Core"]["steps"][] = [
     "run" => "echo \"::set-output name=php_install_list_envvar::$(echo \"PHP_\${{ matrix.php }}\" | sed 's|\.||')\"",
     "id" => "install_envvar",
@@ -190,7 +189,6 @@ $yaml["jobs"]["Core"]["steps"][] = [
     "name" => "Build Image $imageNameCore",
     "run"  => "docker build -f Dockerfile.Core --target php-core --build-arg \"PHP_VERSION=\${{ matrix.php }}\" --build-arg \"PHP_PACKAGES=\$\${{ steps.install_envvar.outputs.php_install_list_envvar }}\" --build-arg \"CORE_FROM={$marshallImageName}\" -t $imageNameCore ."
 ];
-$yaml["jobs"]["Core"]["steps"] = array_merge($yaml["jobs"]["Core"]["steps"], $prePushSteps);
 foreach($tagPrefixes as $registryName => $prefix) {
     $yaml["jobs"]["Core"]["steps"][] = [
         "name" => "Tag Image for: {$registryName}",
@@ -210,8 +208,9 @@ $yaml["jobs"]["PHP"]["needs"] = ["Core"];
 $yaml["jobs"]["PHP"]["strategy"]["matrix"]["php"] = $phpVersions;
 $yaml["jobs"]["PHP"]["strategy"]["matrix"]["release"] = $releases;
 $yaml["jobs"]["PHP"]["strategy"]["matrix"]["platform"] = array_keys($platforms);
-$yaml["jobs"]["PHP"]["steps"] = $setupSteps;
 $imageNameRelease = "bi/php:\${{ matrix.release }}-\${{ matrix.php }}-\${{ matrix.platform }}";
+$yaml["jobs"]["PHP"]["steps"] = array_merge($setupSteps, $loginSteps);
+
 $yaml["jobs"]["PHP"]["steps"][] = [
     "name" => "Pull previous build",
     "run" => "docker pull $imageNameRelease || true",
@@ -224,7 +223,6 @@ $yaml["jobs"]["PHP"]["steps"][] = [
     "name" => "Build Image: \${{ matrix.registry }}/php-\${{ matrix.platform }}:\${{ matrix.release }}-\${{ matrix.php }}",
     "run"  => "docker build -f Dockerfile.PHP --target php-\${{ matrix.release }} --build-arg \"CORE_FROM=${imageNameCore}\" -t ${imageNameRelease} ."
 ];
-$yaml["jobs"]["PHP"]["steps"] = array_merge($yaml["jobs"]["PHP"]["steps"], $prePushSteps);
 
 foreach($tagPrefixes as $registryName => $prefix) {
     $yaml["jobs"]["PHP"]["steps"][] = [
@@ -254,7 +252,7 @@ foreach ($tagPrefixes as $registryName => $registryPrefix) {
 
 $yaml["jobs"]["Aliases"]["name"] = "Apply Aliases/Tags for common versions";
 $yaml["jobs"]["Aliases"]["needs"] = ["Marshall", "PHP"];
-$yaml["jobs"]["Aliases"]["steps"] = $prePushSteps;
+$yaml["jobs"]["Aliases"]["steps"] = $loginSteps;
 foreach($aliases as $from => $to) {
     $yaml["jobs"]["Aliases"]["steps"][] = [
         "name" => (string) "Tag alias {$from} to point to {$to}",

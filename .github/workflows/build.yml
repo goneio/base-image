@@ -31,6 +31,11 @@ jobs:
     - uses: actions/checkout@v1
     - name: Enable multiarch support
       run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - name: 'Login to Registry: Docker Hub'
+      run: docker login -u ${{secrets.DOCKER_HUB_USERNAME}} -p ${{secrets.DOCKER_HUB_PASSWORD}}
+    - name: 'Login to Registry: GitHub'
+      run: docker login docker.pkg.github.com -u ${{secrets.DOCKER_GITHUB_USERNAME}}
+        -p ${{secrets.DOCKER_GITHUB_PASSWORD}}
     - name: Pull base image
       run: docker pull arm64v8/ubuntu || true
     - name: Pull previous build of marshall:${{ matrix.platform }}
@@ -42,11 +47,6 @@ jobs:
       run: 'docker build -f Dockerfile.Marshall --target marshall -t marshall:${{
         matrix.platform }} --build-arg CORE_FROM=$BASE_IMAGE_${{ matrix.platform }}
         . '
-    - name: 'Login to Registry: Docker Hub'
-      run: docker login -u ${{secrets.DOCKER_HUB_USERNAME}} -p ${{secrets.DOCKER_HUB_PASSWORD}}
-    - name: 'Login to Registry: GitHub'
-      run: docker login docker.pkg.github.com -u ${{secrets.DOCKER_GITHUB_USERNAME}}
-        -p ${{secrets.DOCKER_GITHUB_PASSWORD}}
     - name: 'Tag Image for: Docker Hub'
       run: docker tag marshall:${{ matrix.platform }} docker.io/gone/marshall:${{
         matrix.platform }}
@@ -109,6 +109,11 @@ jobs:
     - uses: actions/checkout@v1
     - name: Enable multiarch support
       run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - name: 'Login to Registry: Docker Hub'
+      run: docker login -u ${{secrets.DOCKER_HUB_USERNAME}} -p ${{secrets.DOCKER_HUB_PASSWORD}}
+    - name: 'Login to Registry: GitHub'
+      run: docker login docker.pkg.github.com -u ${{secrets.DOCKER_GITHUB_USERNAME}}
+        -p ${{secrets.DOCKER_GITHUB_PASSWORD}}
     - run: echo "::set-output name=php_install_list_envvar::$(echo "PHP_${{ matrix.php
         }}" | sed 's|\.||')"
       id: install_envvar
@@ -121,11 +126,6 @@ jobs:
         matrix.php }}" --build-arg "PHP_PACKAGES=$${{ steps.install_envvar.outputs.php_install_list_envvar
         }}" --build-arg "CORE_FROM=marshall:${{ matrix.platform }}" -t php:core-${{
         matrix.php }}-${{ matrix.platform }} .
-    - name: 'Login to Registry: Docker Hub'
-      run: docker login -u ${{secrets.DOCKER_HUB_USERNAME}} -p ${{secrets.DOCKER_HUB_PASSWORD}}
-    - name: 'Login to Registry: GitHub'
-      run: docker login docker.pkg.github.com -u ${{secrets.DOCKER_GITHUB_USERNAME}}
-        -p ${{secrets.DOCKER_GITHUB_PASSWORD}}
     - name: 'Tag Image for: Docker Hub'
       run: docker tag php:core-${{ matrix.php }}-${{ matrix.platform }} docker.io/gone/php:core-${{
         matrix.php }}-${{ matrix.platform }}
@@ -162,6 +162,11 @@ jobs:
     - uses: actions/checkout@v1
     - name: Enable multiarch support
       run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - name: 'Login to Registry: Docker Hub'
+      run: docker login -u ${{secrets.DOCKER_HUB_USERNAME}} -p ${{secrets.DOCKER_HUB_PASSWORD}}
+    - name: 'Login to Registry: GitHub'
+      run: docker login docker.pkg.github.com -u ${{secrets.DOCKER_GITHUB_USERNAME}}
+        -p ${{secrets.DOCKER_GITHUB_PASSWORD}}
     - name: Pull previous build
       run: docker pull bi/php:${{ matrix.release }}-${{ matrix.php }}-${{ matrix.platform
         }} || true
@@ -172,11 +177,6 @@ jobs:
       run: docker build -f Dockerfile.PHP --target php-${{ matrix.release }} --build-arg
         "CORE_FROM=php:core-${{ matrix.php }}-${{ matrix.platform }}" -t bi/php:${{
         matrix.release }}-${{ matrix.php }}-${{ matrix.platform }} .
-    - name: 'Login to Registry: Docker Hub'
-      run: docker login -u ${{secrets.DOCKER_HUB_USERNAME}} -p ${{secrets.DOCKER_HUB_PASSWORD}}
-    - name: 'Login to Registry: GitHub'
-      run: docker login docker.pkg.github.com -u ${{secrets.DOCKER_GITHUB_USERNAME}}
-        -p ${{secrets.DOCKER_GITHUB_PASSWORD}}
     - name: 'Tag Image for: Docker Hub'
       run: docker tag bi/php:${{ matrix.release }}-${{ matrix.php }}-${{ matrix.platform
         }} docker.io/gone/bi/php:${{ matrix.release }}-${{ matrix.php }}-${{ matrix.platform
