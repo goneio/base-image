@@ -1,4 +1,8 @@
 ARG CORE_FROM="gone/not-a-real-image"
+
+# build basis is dynamic.
+# hadolint ignore=DL3006
+FROM $CORE_FROM AS php-cli
 ENV DEBIAN_FRONTEND="teletype" \
     TERM=xterm-256color \
     COMPOSER_ALLOW_SUPERUSER=1 \
@@ -7,9 +11,6 @@ ENV DEBIAN_FRONTEND="teletype" \
     COLOUR_NONE='\e[39m' \
     DEFAULT_TZ='Europe/London'
 LABEL maintainer="Matthew Baggett <matthew@baggett.me>"
-# build basis is dynamic.
-# hadolint ignore=DL3006
-FROM $CORE_FROM AS php-cli
 RUN apt-get -qq update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
@@ -32,6 +33,14 @@ ONBUILD RUN /usr/bin/install-report
 # build basis is dynamic.
 # hadolint ignore=DL3006
 FROM $CORE_FROM AS php-nginx
+ENV DEBIAN_FRONTEND="teletype" \
+    TERM=xterm-256color \
+    COMPOSER_ALLOW_SUPERUSER=1 \
+    COLOUR_FAIL='\e[31m' \
+    COLOUR_SUCCESS='\e[32m' \
+    COLOUR_NONE='\e[39m' \
+    DEFAULT_TZ='Europe/London'
+LABEL maintainer="Matthew Baggett <matthew@baggett.me>"
 ARG PHP_VERSION
 ARG PHP_MEMORY_LIMIT=128M
 ARG PHP_DATA_MAX_SIZE=1024M
@@ -144,6 +153,14 @@ ONBUILD RUN /usr/bin/install-report
 # build basis is dynamic.
 # hadolint ignore=DL3006
 FROM $CORE_FROM AS php-apache
+ENV DEBIAN_FRONTEND="teletype" \
+    TERM=xterm-256color \
+    COMPOSER_ALLOW_SUPERUSER=1 \
+    COLOUR_FAIL='\e[31m' \
+    COLOUR_SUCCESS='\e[32m' \
+    COLOUR_NONE='\e[39m' \
+    DEFAULT_TZ='Europe/London'
+LABEL maintainer="Matthew Baggett <matthew@baggett.me>"
 ARG PHP_VERSION
 
 # Ignore apt pinning
