@@ -15,6 +15,8 @@ jobs:
     - name: Hadolint PHP
       run: docker run --rm -i hadolint/hadolint < Dockerfile.PHP
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
   Marshall:
     needs:
     - LintDockerfile
@@ -25,6 +27,7 @@ jobs:
         - x86_64
         - arm64v8
         - arm32v6
+      fail-fast: false
     env:
       BASE_IMAGE_x86_64: ubuntu:bionic
       BASE_IMAGE_arm64v8: arm64v8/ubuntu:18.04
@@ -77,6 +80,7 @@ jobs:
         - x86_64
         - arm64v8
         - arm32v6
+      fail-fast: false
     env:
       PHP_56: git mariadb-client php5.6 php5.6-apcu php5.6-bcmath php5.6-bz2 php5.6-cli
         php5.6-curl php5.6-gd php5.6-imap php5.6-intl php5.6-json php5.6-ldap php5.6-mbstring
@@ -162,6 +166,7 @@ jobs:
         - x86_64
         - arm64v8
         - arm32v6
+      fail-fast: false
     steps:
     - uses: actions/checkout@v1
     - name: Enable multiarch support
@@ -468,3 +473,5 @@ jobs:
     - name: Push alias docker.pkg.github.com/goneio/base-image/php:core-7.4
       run: docker push docker.pkg.github.com/goneio/base-image/php:core-7.4
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false

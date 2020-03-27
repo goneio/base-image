@@ -271,6 +271,7 @@ foreach($aliases as $from => $to) {
 
 foreach($yaml['jobs'] as &$job){
     $job['runs-on'] = $runsOn;
+    $job['strategy']['fail-fast'] = false;
 }
 
 $outputFile = __DIR__ . "/../.github/workflows/{$workflowFile}";
