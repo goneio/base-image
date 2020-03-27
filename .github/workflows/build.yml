@@ -24,9 +24,11 @@ jobs:
         platform:
         - x86_64
         - arm64v8
+        - arm32v6
     env:
       BASE_IMAGE_x86_64: ubuntu:bionic
-      BASE_IMAGE_arm64v8: arm64v8/ubuntu
+      BASE_IMAGE_arm64v8: arm64v8/ubuntu:18.04
+      BASE_IMAGE_arm32v6: arm32v6/ubuntu:18.04
     steps:
     - uses: actions/checkout@v1
     - name: Enable multiarch support
@@ -37,7 +39,7 @@ jobs:
       run: docker login docker.pkg.github.com -u ${{secrets.DOCKER_GITHUB_USERNAME}}
         -p ${{secrets.DOCKER_GITHUB_PASSWORD}}
     - name: Pull base image
-      run: docker pull arm64v8/ubuntu || true
+      run: docker pull arm32v6/ubuntu:18.04 || true
     - name: Pull previous build of marshall:${{ matrix.platform }}
       run: docker pull marshall:${{ matrix.platform }} || true
     - name: Setup Marshall
@@ -74,6 +76,7 @@ jobs:
         platform:
         - x86_64
         - arm64v8
+        - arm32v6
     env:
       PHP_56: git mariadb-client php5.6 php5.6-apcu php5.6-bcmath php5.6-bz2 php5.6-cli
         php5.6-curl php5.6-gd php5.6-imap php5.6-intl php5.6-json php5.6-ldap php5.6-mbstring
@@ -158,6 +161,7 @@ jobs:
         platform:
         - x86_64
         - arm64v8
+        - arm32v6
     steps:
     - uses: actions/checkout@v1
     - name: Enable multiarch support

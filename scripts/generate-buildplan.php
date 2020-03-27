@@ -29,7 +29,8 @@ $dir = __DIR__;
 require_once(__DIR__ . "/vendor/autoload.php");
 $platforms = [
     "x86_64" => "ubuntu:bionic",
-    "arm64v8" => "arm64v8/ubuntu",
+    "arm64v8" => "arm64v8/ubuntu:18.04",
+    "arm32v6" => "arm32v6/ubuntu:18.04",
 ];
 $releases = [
     "apache",
