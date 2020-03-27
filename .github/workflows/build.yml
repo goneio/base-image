@@ -34,7 +34,7 @@ jobs:
       run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - name: Pull base image
       run: docker pull arm64v8/ubuntu || true
-    - name: Pull previous build
+    - name: Pull previous build of marshall:${{ matrix.platform }}
       run: docker pull marshall:${{ matrix.platform }} || true
     - name: Setup Marshall
       run: git rev-parse --short HEAD > marshall/marshall_version ; date '+%Y-%m-%d'
@@ -43,10 +43,15 @@ jobs:
       run: 'docker build -f Dockerfile.Marshall --target marshall -t marshall:${{
         matrix.platform }} --build-arg CORE_FROM=$BASE_IMAGE_${{ matrix.platform }}
         . '
-    - name: Tag Image for Docker Hub
+    - name: 'Login to Registry: Docker Hub'
+      run: docker login -u ${{secrets.DOCKER_HUB_USERNAME}} -p ${{secrets.DOCKER_HUB_PASSWORD}}
+    - name: 'Login to Registry: GitHub'
+      run: docker login docker.pkg.github.com -u ${{secrets.DOCKER_GITHUB_USERNAME}}
+        -p ${{secrets.DOCKER_GITHUB_PASSWORD}}
+    - name: 'Tag Image for: Docker Hub'
       run: docker tag marshall:${{ matrix.platform }} docker.io/gone/marshall:${{
         matrix.platform }}
-    - name: Tag Image for Github Registry
+    - name: 'Tag Image for: Github Registry'
       run: docker tag marshall:${{ matrix.platform }} docker.pkg.github.com/goneio/base-image/marshall:${{
         matrix.platform }}
     - name: Push Image to Docker Hub
@@ -117,10 +122,15 @@ jobs:
         matrix.php }}" --build-arg "PHP_PACKAGES=$${{ steps.install_envvar.outputs.php_install_list_envvar
         }}" --build-arg "CORE_FROM=marshall:${{ matrix.platform }}" -t php:core-${{
         matrix.php }}-${{ matrix.platform }} .
-    - name: Tag Image for Docker Hub
+    - name: 'Login to Registry: Docker Hub'
+      run: docker login -u ${{secrets.DOCKER_HUB_USERNAME}} -p ${{secrets.DOCKER_HUB_PASSWORD}}
+    - name: 'Login to Registry: GitHub'
+      run: docker login docker.pkg.github.com -u ${{secrets.DOCKER_GITHUB_USERNAME}}
+        -p ${{secrets.DOCKER_GITHUB_PASSWORD}}
+    - name: 'Tag Image for: Docker Hub'
       run: docker tag php:core-${{ matrix.php }}-${{ matrix.platform }} docker.io/gone/php:core-${{
         matrix.php }}-${{ matrix.platform }}
-    - name: Tag Image for Github Registry
+    - name: 'Tag Image for: Github Registry'
       run: docker tag php:core-${{ matrix.php }}-${{ matrix.platform }} docker.pkg.github.com/goneio/base-image/php:core-${{
         matrix.php }}-${{ matrix.platform }}
     - name: Push Image to Docker Hub
@@ -163,11 +173,16 @@ jobs:
       run: docker build -f Dockerfile.PHP --target php-${{ matrix.release }} --build-arg
         "CORE_FROM=php:core-${{ matrix.php }}-${{ matrix.platform }}" -t bi/php:${{
         matrix.release }}-${{ matrix.php }}-${{ matrix.platform }} .
-    - name: Tag Image for Docker Hub
+    - name: 'Login to Registry: Docker Hub'
+      run: docker login -u ${{secrets.DOCKER_HUB_USERNAME}} -p ${{secrets.DOCKER_HUB_PASSWORD}}
+    - name: 'Login to Registry: GitHub'
+      run: docker login docker.pkg.github.com -u ${{secrets.DOCKER_GITHUB_USERNAME}}
+        -p ${{secrets.DOCKER_GITHUB_PASSWORD}}
+    - name: 'Tag Image for: Docker Hub'
       run: docker tag bi/php:${{ matrix.release }}-${{ matrix.php }}-${{ matrix.platform
         }} docker.io/gone/bi/php:${{ matrix.release }}-${{ matrix.php }}-${{ matrix.platform
         }}
-    - name: Tag Image for Github Registry
+    - name: 'Tag Image for: Github Registry'
       run: docker tag bi/php:${{ matrix.release }}-${{ matrix.php }}-${{ matrix.platform
         }} docker.pkg.github.com/goneio/base-image/bi/php:${{ matrix.release }}-${{
         matrix.php }}-${{ matrix.platform }}
@@ -177,3 +192,274 @@ jobs:
     - name: Push Image to Github Registry
       run: docker push docker.pkg.github.com/goneio/base-image/bi/php:${{ matrix.release
         }}-${{ matrix.php }}-${{ matrix.platform }}
+  Aliases:
+    name: Apply Aliases/Tags for common versions
+    needs:
+    - Marshall
+    - PHP
+    steps:
+    - name: 'Login to Registry: Docker Hub'
+      run: docker login -u ${{secrets.DOCKER_HUB_USERNAME}} -p ${{secrets.DOCKER_HUB_PASSWORD}}
+    - name: 'Login to Registry: GitHub'
+      run: docker login docker.pkg.github.com -u ${{secrets.DOCKER_GITHUB_USERNAME}}
+        -p ${{secrets.DOCKER_GITHUB_PASSWORD}}
+    - name: Tag alias docker.io/gone/php to point to docker.io/gone/php:core-7.4-x86_64
+      run: docker tag docker.io/gone/php docker.io/gone/php:core-7.4-x86_64
+    - name: Push alias docker.io/gone/php
+      run: docker push docker.io/gone/php
+    - name: Tag alias docker.io/gone/php:apache to point to docker.io/gone/php:apache-7.4-x86_64
+      run: docker tag docker.io/gone/php:apache docker.io/gone/php:apache-7.4-x86_64
+    - name: Push alias docker.io/gone/php:apache
+      run: docker push docker.io/gone/php:apache
+    - name: Tag alias docker.io/gone/php:apache-5.6 to point to docker.io/gone/php:apache-5.6-x86_64
+      run: docker tag docker.io/gone/php:apache-5.6 docker.io/gone/php:apache-5.6-x86_64
+    - name: Push alias docker.io/gone/php:apache-5.6
+      run: docker push docker.io/gone/php:apache-5.6
+    - name: Tag alias docker.io/gone/php:apache-7.0 to point to docker.io/gone/php:apache-7.0-x86_64
+      run: docker tag docker.io/gone/php:apache-7.0 docker.io/gone/php:apache-7.0-x86_64
+    - name: Push alias docker.io/gone/php:apache-7.0
+      run: docker push docker.io/gone/php:apache-7.0
+    - name: Tag alias docker.io/gone/php:apache-7.1 to point to docker.io/gone/php:apache-7.1-x86_64
+      run: docker tag docker.io/gone/php:apache-7.1 docker.io/gone/php:apache-7.1-x86_64
+    - name: Push alias docker.io/gone/php:apache-7.1
+      run: docker push docker.io/gone/php:apache-7.1
+    - name: Tag alias docker.io/gone/php:apache-7.2 to point to docker.io/gone/php:apache-7.2-x86_64
+      run: docker tag docker.io/gone/php:apache-7.2 docker.io/gone/php:apache-7.2-x86_64
+    - name: Push alias docker.io/gone/php:apache-7.2
+      run: docker push docker.io/gone/php:apache-7.2
+    - name: Tag alias docker.io/gone/php:apache-7.3 to point to docker.io/gone/php:apache-7.3-x86_64
+      run: docker tag docker.io/gone/php:apache-7.3 docker.io/gone/php:apache-7.3-x86_64
+    - name: Push alias docker.io/gone/php:apache-7.3
+      run: docker push docker.io/gone/php:apache-7.3
+    - name: Tag alias docker.io/gone/php:apache-7.4 to point to docker.io/gone/php:apache-7.4-x86_64
+      run: docker tag docker.io/gone/php:apache-7.4 docker.io/gone/php:apache-7.4-x86_64
+    - name: Push alias docker.io/gone/php:apache-7.4
+      run: docker push docker.io/gone/php:apache-7.4
+    - name: Tag alias docker.io/gone/php:nginx to point to docker.io/gone/php:nginx-7.4-x86_64
+      run: docker tag docker.io/gone/php:nginx docker.io/gone/php:nginx-7.4-x86_64
+    - name: Push alias docker.io/gone/php:nginx
+      run: docker push docker.io/gone/php:nginx
+    - name: Tag alias docker.io/gone/php:nginx-5.6 to point to docker.io/gone/php:nginx-5.6-x86_64
+      run: docker tag docker.io/gone/php:nginx-5.6 docker.io/gone/php:nginx-5.6-x86_64
+    - name: Push alias docker.io/gone/php:nginx-5.6
+      run: docker push docker.io/gone/php:nginx-5.6
+    - name: Tag alias docker.io/gone/php:nginx-7.0 to point to docker.io/gone/php:nginx-7.0-x86_64
+      run: docker tag docker.io/gone/php:nginx-7.0 docker.io/gone/php:nginx-7.0-x86_64
+    - name: Push alias docker.io/gone/php:nginx-7.0
+      run: docker push docker.io/gone/php:nginx-7.0
+    - name: Tag alias docker.io/gone/php:nginx-7.1 to point to docker.io/gone/php:nginx-7.1-x86_64
+      run: docker tag docker.io/gone/php:nginx-7.1 docker.io/gone/php:nginx-7.1-x86_64
+    - name: Push alias docker.io/gone/php:nginx-7.1
+      run: docker push docker.io/gone/php:nginx-7.1
+    - name: Tag alias docker.io/gone/php:nginx-7.2 to point to docker.io/gone/php:nginx-7.2-x86_64
+      run: docker tag docker.io/gone/php:nginx-7.2 docker.io/gone/php:nginx-7.2-x86_64
+    - name: Push alias docker.io/gone/php:nginx-7.2
+      run: docker push docker.io/gone/php:nginx-7.2
+    - name: Tag alias docker.io/gone/php:nginx-7.3 to point to docker.io/gone/php:nginx-7.3-x86_64
+      run: docker tag docker.io/gone/php:nginx-7.3 docker.io/gone/php:nginx-7.3-x86_64
+    - name: Push alias docker.io/gone/php:nginx-7.3
+      run: docker push docker.io/gone/php:nginx-7.3
+    - name: Tag alias docker.io/gone/php:nginx-7.4 to point to docker.io/gone/php:nginx-7.4-x86_64
+      run: docker tag docker.io/gone/php:nginx-7.4 docker.io/gone/php:nginx-7.4-x86_64
+    - name: Push alias docker.io/gone/php:nginx-7.4
+      run: docker push docker.io/gone/php:nginx-7.4
+    - name: Tag alias docker.io/gone/php:cli to point to docker.io/gone/php:cli-7.4-x86_64
+      run: docker tag docker.io/gone/php:cli docker.io/gone/php:cli-7.4-x86_64
+    - name: Push alias docker.io/gone/php:cli
+      run: docker push docker.io/gone/php:cli
+    - name: Tag alias docker.io/gone/php:cli-5.6 to point to docker.io/gone/php:cli-5.6-x86_64
+      run: docker tag docker.io/gone/php:cli-5.6 docker.io/gone/php:cli-5.6-x86_64
+    - name: Push alias docker.io/gone/php:cli-5.6
+      run: docker push docker.io/gone/php:cli-5.6
+    - name: Tag alias docker.io/gone/php:cli-7.0 to point to docker.io/gone/php:cli-7.0-x86_64
+      run: docker tag docker.io/gone/php:cli-7.0 docker.io/gone/php:cli-7.0-x86_64
+    - name: Push alias docker.io/gone/php:cli-7.0
+      run: docker push docker.io/gone/php:cli-7.0
+    - name: Tag alias docker.io/gone/php:cli-7.1 to point to docker.io/gone/php:cli-7.1-x86_64
+      run: docker tag docker.io/gone/php:cli-7.1 docker.io/gone/php:cli-7.1-x86_64
+    - name: Push alias docker.io/gone/php:cli-7.1
+      run: docker push docker.io/gone/php:cli-7.1
+    - name: Tag alias docker.io/gone/php:cli-7.2 to point to docker.io/gone/php:cli-7.2-x86_64
+      run: docker tag docker.io/gone/php:cli-7.2 docker.io/gone/php:cli-7.2-x86_64
+    - name: Push alias docker.io/gone/php:cli-7.2
+      run: docker push docker.io/gone/php:cli-7.2
+    - name: Tag alias docker.io/gone/php:cli-7.3 to point to docker.io/gone/php:cli-7.3-x86_64
+      run: docker tag docker.io/gone/php:cli-7.3 docker.io/gone/php:cli-7.3-x86_64
+    - name: Push alias docker.io/gone/php:cli-7.3
+      run: docker push docker.io/gone/php:cli-7.3
+    - name: Tag alias docker.io/gone/php:cli-7.4 to point to docker.io/gone/php:cli-7.4-x86_64
+      run: docker tag docker.io/gone/php:cli-7.4 docker.io/gone/php:cli-7.4-x86_64
+    - name: Push alias docker.io/gone/php:cli-7.4
+      run: docker push docker.io/gone/php:cli-7.4
+    - name: Tag alias docker.io/gone/php:core to point to docker.io/gone/php:core-7.4-x86_64
+      run: docker tag docker.io/gone/php:core docker.io/gone/php:core-7.4-x86_64
+    - name: Push alias docker.io/gone/php:core
+      run: docker push docker.io/gone/php:core
+    - name: Tag alias docker.io/gone/php:core-5.6 to point to docker.io/gone/php:core-5.6-x86_64
+      run: docker tag docker.io/gone/php:core-5.6 docker.io/gone/php:core-5.6-x86_64
+    - name: Push alias docker.io/gone/php:core-5.6
+      run: docker push docker.io/gone/php:core-5.6
+    - name: Tag alias docker.io/gone/php:core-7.0 to point to docker.io/gone/php:core-7.0-x86_64
+      run: docker tag docker.io/gone/php:core-7.0 docker.io/gone/php:core-7.0-x86_64
+    - name: Push alias docker.io/gone/php:core-7.0
+      run: docker push docker.io/gone/php:core-7.0
+    - name: Tag alias docker.io/gone/php:core-7.1 to point to docker.io/gone/php:core-7.1-x86_64
+      run: docker tag docker.io/gone/php:core-7.1 docker.io/gone/php:core-7.1-x86_64
+    - name: Push alias docker.io/gone/php:core-7.1
+      run: docker push docker.io/gone/php:core-7.1
+    - name: Tag alias docker.io/gone/php:core-7.2 to point to docker.io/gone/php:core-7.2-x86_64
+      run: docker tag docker.io/gone/php:core-7.2 docker.io/gone/php:core-7.2-x86_64
+    - name: Push alias docker.io/gone/php:core-7.2
+      run: docker push docker.io/gone/php:core-7.2
+    - name: Tag alias docker.io/gone/php:core-7.3 to point to docker.io/gone/php:core-7.3-x86_64
+      run: docker tag docker.io/gone/php:core-7.3 docker.io/gone/php:core-7.3-x86_64
+    - name: Push alias docker.io/gone/php:core-7.3
+      run: docker push docker.io/gone/php:core-7.3
+    - name: Tag alias docker.io/gone/php:core-7.4 to point to docker.io/gone/php:core-7.4-x86_64
+      run: docker tag docker.io/gone/php:core-7.4 docker.io/gone/php:core-7.4-x86_64
+    - name: Push alias docker.io/gone/php:core-7.4
+      run: docker push docker.io/gone/php:core-7.4
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php to point to docker.pkg.github.com/goneio/base-image/php:core-7.4-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php docker.pkg.github.com/goneio/base-image/php:core-7.4-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php
+      run: docker push docker.pkg.github.com/goneio/base-image/php
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:apache to point
+        to docker.pkg.github.com/goneio/base-image/php:apache-7.4-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:apache docker.pkg.github.com/goneio/base-image/php:apache-7.4-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:apache
+      run: docker push docker.pkg.github.com/goneio/base-image/php:apache
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:apache-5.6 to point
+        to docker.pkg.github.com/goneio/base-image/php:apache-5.6-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:apache-5.6 docker.pkg.github.com/goneio/base-image/php:apache-5.6-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:apache-5.6
+      run: docker push docker.pkg.github.com/goneio/base-image/php:apache-5.6
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:apache-7.0 to point
+        to docker.pkg.github.com/goneio/base-image/php:apache-7.0-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:apache-7.0 docker.pkg.github.com/goneio/base-image/php:apache-7.0-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:apache-7.0
+      run: docker push docker.pkg.github.com/goneio/base-image/php:apache-7.0
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:apache-7.1 to point
+        to docker.pkg.github.com/goneio/base-image/php:apache-7.1-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:apache-7.1 docker.pkg.github.com/goneio/base-image/php:apache-7.1-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:apache-7.1
+      run: docker push docker.pkg.github.com/goneio/base-image/php:apache-7.1
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:apache-7.2 to point
+        to docker.pkg.github.com/goneio/base-image/php:apache-7.2-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:apache-7.2 docker.pkg.github.com/goneio/base-image/php:apache-7.2-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:apache-7.2
+      run: docker push docker.pkg.github.com/goneio/base-image/php:apache-7.2
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:apache-7.3 to point
+        to docker.pkg.github.com/goneio/base-image/php:apache-7.3-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:apache-7.3 docker.pkg.github.com/goneio/base-image/php:apache-7.3-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:apache-7.3
+      run: docker push docker.pkg.github.com/goneio/base-image/php:apache-7.3
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:apache-7.4 to point
+        to docker.pkg.github.com/goneio/base-image/php:apache-7.4-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:apache-7.4 docker.pkg.github.com/goneio/base-image/php:apache-7.4-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:apache-7.4
+      run: docker push docker.pkg.github.com/goneio/base-image/php:apache-7.4
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:nginx to point to
+        docker.pkg.github.com/goneio/base-image/php:nginx-7.4-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:nginx docker.pkg.github.com/goneio/base-image/php:nginx-7.4-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:nginx
+      run: docker push docker.pkg.github.com/goneio/base-image/php:nginx
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:nginx-5.6 to point
+        to docker.pkg.github.com/goneio/base-image/php:nginx-5.6-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:nginx-5.6 docker.pkg.github.com/goneio/base-image/php:nginx-5.6-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:nginx-5.6
+      run: docker push docker.pkg.github.com/goneio/base-image/php:nginx-5.6
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:nginx-7.0 to point
+        to docker.pkg.github.com/goneio/base-image/php:nginx-7.0-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:nginx-7.0 docker.pkg.github.com/goneio/base-image/php:nginx-7.0-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:nginx-7.0
+      run: docker push docker.pkg.github.com/goneio/base-image/php:nginx-7.0
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:nginx-7.1 to point
+        to docker.pkg.github.com/goneio/base-image/php:nginx-7.1-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:nginx-7.1 docker.pkg.github.com/goneio/base-image/php:nginx-7.1-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:nginx-7.1
+      run: docker push docker.pkg.github.com/goneio/base-image/php:nginx-7.1
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:nginx-7.2 to point
+        to docker.pkg.github.com/goneio/base-image/php:nginx-7.2-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:nginx-7.2 docker.pkg.github.com/goneio/base-image/php:nginx-7.2-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:nginx-7.2
+      run: docker push docker.pkg.github.com/goneio/base-image/php:nginx-7.2
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:nginx-7.3 to point
+        to docker.pkg.github.com/goneio/base-image/php:nginx-7.3-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:nginx-7.3 docker.pkg.github.com/goneio/base-image/php:nginx-7.3-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:nginx-7.3
+      run: docker push docker.pkg.github.com/goneio/base-image/php:nginx-7.3
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:nginx-7.4 to point
+        to docker.pkg.github.com/goneio/base-image/php:nginx-7.4-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:nginx-7.4 docker.pkg.github.com/goneio/base-image/php:nginx-7.4-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:nginx-7.4
+      run: docker push docker.pkg.github.com/goneio/base-image/php:nginx-7.4
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:cli to point to
+        docker.pkg.github.com/goneio/base-image/php:cli-7.4-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:cli docker.pkg.github.com/goneio/base-image/php:cli-7.4-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:cli
+      run: docker push docker.pkg.github.com/goneio/base-image/php:cli
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:cli-5.6 to point
+        to docker.pkg.github.com/goneio/base-image/php:cli-5.6-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:cli-5.6 docker.pkg.github.com/goneio/base-image/php:cli-5.6-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:cli-5.6
+      run: docker push docker.pkg.github.com/goneio/base-image/php:cli-5.6
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:cli-7.0 to point
+        to docker.pkg.github.com/goneio/base-image/php:cli-7.0-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:cli-7.0 docker.pkg.github.com/goneio/base-image/php:cli-7.0-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:cli-7.0
+      run: docker push docker.pkg.github.com/goneio/base-image/php:cli-7.0
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:cli-7.1 to point
+        to docker.pkg.github.com/goneio/base-image/php:cli-7.1-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:cli-7.1 docker.pkg.github.com/goneio/base-image/php:cli-7.1-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:cli-7.1
+      run: docker push docker.pkg.github.com/goneio/base-image/php:cli-7.1
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:cli-7.2 to point
+        to docker.pkg.github.com/goneio/base-image/php:cli-7.2-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:cli-7.2 docker.pkg.github.com/goneio/base-image/php:cli-7.2-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:cli-7.2
+      run: docker push docker.pkg.github.com/goneio/base-image/php:cli-7.2
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:cli-7.3 to point
+        to docker.pkg.github.com/goneio/base-image/php:cli-7.3-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:cli-7.3 docker.pkg.github.com/goneio/base-image/php:cli-7.3-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:cli-7.3
+      run: docker push docker.pkg.github.com/goneio/base-image/php:cli-7.3
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:cli-7.4 to point
+        to docker.pkg.github.com/goneio/base-image/php:cli-7.4-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:cli-7.4 docker.pkg.github.com/goneio/base-image/php:cli-7.4-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:cli-7.4
+      run: docker push docker.pkg.github.com/goneio/base-image/php:cli-7.4
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:core to point to
+        docker.pkg.github.com/goneio/base-image/php:core-7.4-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:core docker.pkg.github.com/goneio/base-image/php:core-7.4-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:core
+      run: docker push docker.pkg.github.com/goneio/base-image/php:core
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:core-5.6 to point
+        to docker.pkg.github.com/goneio/base-image/php:core-5.6-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:core-5.6 docker.pkg.github.com/goneio/base-image/php:core-5.6-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:core-5.6
+      run: docker push docker.pkg.github.com/goneio/base-image/php:core-5.6
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:core-7.0 to point
+        to docker.pkg.github.com/goneio/base-image/php:core-7.0-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:core-7.0 docker.pkg.github.com/goneio/base-image/php:core-7.0-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:core-7.0
+      run: docker push docker.pkg.github.com/goneio/base-image/php:core-7.0
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:core-7.1 to point
+        to docker.pkg.github.com/goneio/base-image/php:core-7.1-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:core-7.1 docker.pkg.github.com/goneio/base-image/php:core-7.1-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:core-7.1
+      run: docker push docker.pkg.github.com/goneio/base-image/php:core-7.1
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:core-7.2 to point
+        to docker.pkg.github.com/goneio/base-image/php:core-7.2-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:core-7.2 docker.pkg.github.com/goneio/base-image/php:core-7.2-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:core-7.2
+      run: docker push docker.pkg.github.com/goneio/base-image/php:core-7.2
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:core-7.3 to point
+        to docker.pkg.github.com/goneio/base-image/php:core-7.3-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:core-7.3 docker.pkg.github.com/goneio/base-image/php:core-7.3-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:core-7.3
+      run: docker push docker.pkg.github.com/goneio/base-image/php:core-7.3
+    - name: Tag alias docker.pkg.github.com/goneio/base-image/php:core-7.4 to point
+        to docker.pkg.github.com/goneio/base-image/php:core-7.4-x86_64
+      run: docker tag docker.pkg.github.com/goneio/base-image/php:core-7.4 docker.pkg.github.com/goneio/base-image/php:core-7.4-x86_64
+    - name: Push alias docker.pkg.github.com/goneio/base-image/php:core-7.4
+      run: docker push docker.pkg.github.com/goneio/base-image/php:core-7.4
