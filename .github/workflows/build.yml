@@ -25,9 +25,6 @@ jobs:
         platform:
         - x86_64
         - arm64v8
-        registry:
-        - docker.io/gone
-        - docker.pkg.github.com/goneio/base-image
     env:
       BASE_IMAGE_x86_64: ubuntu:bionic
       BASE_IMAGE_arm64v8: arm64v8/ubuntu
@@ -38,16 +35,25 @@ jobs:
     - name: Pull base image
       run: docker pull arm64v8/ubuntu || true
     - name: Pull previous build
-      run: docker pull ${{ matrix.registry }}/marshall:${{ matrix.platform }} || true
+      run: docker pull marshall:${{ matrix.platform }} || true
     - name: Setup Marshall
       run: git rev-parse --short HEAD > marshall/marshall_version ; date '+%Y-%m-%d'
         > marshall/marshall_build_date ; hostname > marshall/marshall_build_host
-    - name: Build Image ${{ matrix.registry }}/marshall:${{ matrix.platform }}
-      run: 'docker build -f Dockerfile.Marshall --target marshall -t ${{ matrix.registry
-        }}/marshall:${{ matrix.platform }} --build-arg CORE_FROM=$BASE_IMAGE_${{ matrix.platform
-        }} . '
-    - name: Push Image ${{ matrix.registry }}/marshall:${{ matrix.platform }}
-      run: docker push ${{ matrix.registry }}/marshall:${{ matrix.platform }}
+    - name: Build Image marshall:${{ matrix.platform }}
+      run: 'docker build -f Dockerfile.Marshall --target marshall -t marshall:${{
+        matrix.platform }} --build-arg CORE_FROM=$BASE_IMAGE_${{ matrix.platform }}
+        . '
+    - name: Tag Image for Docker Hub
+      run: docker tag marshall:${{ matrix.platform }} docker.io/gone/marshall:${{
+        matrix.platform }}
+    - name: Tag Image for Github Registry
+      run: docker tag marshall:${{ matrix.platform }} docker.pkg.github.com/goneio/base-image/marshall:${{
+        matrix.platform }}
+    - name: Push Image to Docker Hub
+      run: docker push docker.io/gone/marshall:${{ matrix.platform }}
+    - name: Push Image to Github Registry
+      run: docker push docker.pkg.github.com/goneio/base-image/marshall:${{ matrix.platform
+        }}
   Core:
     runs-on: ubuntu-latest
     needs:
@@ -64,32 +70,6 @@ jobs:
         platform:
         - x86_64
         - arm64v8
-        registry:
-        - docker.io/gone
-        - docker.pkg.github.com/goneio/base-image
-    steps:
-    - uses: actions/checkout@v1
-    - name: Enable multiarch support
-      run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-    - run: echo "::set-output name=php_install_list_envvar::$(echo "PHP_${{ matrix.php
-        }}" | sed 's|\.||')"
-      id: install_envvar
-    - name: Pull base image (marshall)
-      run: docker pull ${{ matrix.registry }}/marshall:${{ matrix.platform }} || true
-    - name: Pull Previous Image
-      run: docker pull ${{ matrix.registry }}/php:core-${{ matrix.php }}-${{ matrix.platform
-        }} || true
-    - name: Build Image ${{ matrix.registry }}/php:core-${{ matrix.php }}-${{ matrix.platform
-        }}
-      run: docker build -f Dockerfile.Core --target php-core --build-arg "PHP_VERSION=${{
-        matrix.php }}" --build-arg "PHP_PACKAGES=$${{ steps.install_envvar.outputs.php_install_list_envvar
-        }}" --build-arg "CORE_FROM=${{ matrix.registry }}/marshall:${{ matrix.platform
-        }}" -t ${{ matrix.registry }}/php:core-${{ matrix.php }}-${{ matrix.platform
-        }} .
-    - name: Push Image ${{ matrix.registry }}/php:core-${{ matrix.php }}-${{ matrix.platform
-        }}
-      run: docker push ${{ matrix.registry }}/php:core-${{ matrix.php }}-${{ matrix.platform
-        }}
     env:
       PHP_56: git mariadb-client php5.6 php5.6-apcu php5.6-bcmath php5.6-bz2 php5.6-cli
         php5.6-curl php5.6-gd php5.6-imap php5.6-intl php5.6-json php5.6-ldap php5.6-mbstring
@@ -121,6 +101,34 @@ jobs:
         php7.4-mbstring php7.4-memcache php7.4-memcached php7.4-mongodb php7.4-mysql
         php7.4-opcache php7.4-pgsql php7.4-phpdbg php7.4-pspell php7.4-redis php7.4-soap
         php7.4-sqlite php7.4-xdebug php7.4-xml php7.4-zip postgresql-client
+    steps:
+    - uses: actions/checkout@v1
+    - name: Enable multiarch support
+      run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+    - run: echo "::set-output name=php_install_list_envvar::$(echo "PHP_${{ matrix.php
+        }}" | sed 's|\.||')"
+      id: install_envvar
+    - name: Pull base image (marshall)
+      run: docker pull marshall:${{ matrix.platform }} || true
+    - name: Pull Previous Image
+      run: docker pull php:core-${{ matrix.php }}-${{ matrix.platform }} || true
+    - name: Build Image php:core-${{ matrix.php }}-${{ matrix.platform }}
+      run: docker build -f Dockerfile.Core --target php-core --build-arg "PHP_VERSION=${{
+        matrix.php }}" --build-arg "PHP_PACKAGES=$${{ steps.install_envvar.outputs.php_install_list_envvar
+        }}" --build-arg "CORE_FROM=marshall:${{ matrix.platform }}" -t php:core-${{
+        matrix.php }}-${{ matrix.platform }} .
+    - name: Tag Image for Docker Hub
+      run: docker tag php:core-${{ matrix.php }}-${{ matrix.platform }} docker.io/gone/php:core-${{
+        matrix.php }}-${{ matrix.platform }}
+    - name: Tag Image for Github Registry
+      run: docker tag php:core-${{ matrix.php }}-${{ matrix.platform }} docker.pkg.github.com/goneio/base-image/php:core-${{
+        matrix.php }}-${{ matrix.platform }}
+    - name: Push Image to Docker Hub
+      run: docker push docker.io/gone/php:core-${{ matrix.php }}-${{ matrix.platform
+        }}
+    - name: Push Image to Github Registry
+      run: docker push docker.pkg.github.com/goneio/base-image/php:core-${{ matrix.php
+        }}-${{ matrix.platform }}
   PHP:
     runs-on: ubuntu-latest
     needs:
@@ -141,26 +149,31 @@ jobs:
         platform:
         - x86_64
         - arm64v8
-        registry:
-        - docker.io/gone
-        - docker.pkg.github.com/goneio/base-image
     steps:
     - uses: actions/checkout@v1
     - name: Enable multiarch support
       run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - name: Pull previous build
-      run: docker pull ${{ matrix.registry }}/php:${{ matrix.release }}-${{ matrix.php
-        }}-${{ matrix.platform }} || true
-    - name: Pull base image
-      run: docker pull ${{ matrix.registry }}/php:core-${{ matrix.php }}-${{ matrix.platform
+      run: docker pull bi/php:${{ matrix.release }}-${{ matrix.php }}-${{ matrix.platform
         }} || true
+    - name: Pull base image
+      run: docker pull php:core-${{ matrix.php }}-${{ matrix.platform }} || true
     - name: 'Build Image: ${{ matrix.registry }}/php-${{ matrix.platform }}:${{ matrix.release
         }}-${{ matrix.php }}'
       run: docker build -f Dockerfile.PHP --target php-${{ matrix.release }} --build-arg
-        "CORE_FROM=${{ matrix.registry }}/php:core-${{ matrix.php }}-${{ matrix.platform
-        }}" -t ${{ matrix.registry }}/php:${{ matrix.release }}-${{ matrix.php }}-${{
-        matrix.platform }} .
-    - name: 'Push Image: ${{ matrix.registry }}/php:${{ matrix.release }}-${{ matrix.php
-        }}-${{ matrix.platform }}'
-      run: docker push ${{ matrix.registry }}/php:${{ matrix.release }}-${{ matrix.php
+        "CORE_FROM=php:core-${{ matrix.php }}-${{ matrix.platform }}" -t bi/php:${{
+        matrix.release }}-${{ matrix.php }}-${{ matrix.platform }} .
+    - name: Tag Image for Docker Hub
+      run: docker tag bi/php:${{ matrix.release }}-${{ matrix.php }}-${{ matrix.platform
+        }} docker.io/gone/bi/php:${{ matrix.release }}-${{ matrix.php }}-${{ matrix.platform
+        }}
+    - name: Tag Image for Github Registry
+      run: docker tag bi/php:${{ matrix.release }}-${{ matrix.php }}-${{ matrix.platform
+        }} docker.pkg.github.com/goneio/base-image/bi/php:${{ matrix.release }}-${{
+        matrix.php }}-${{ matrix.platform }}
+    - name: Push Image to Docker Hub
+      run: docker push docker.io/gone/bi/php:${{ matrix.release }}-${{ matrix.php
         }}-${{ matrix.platform }}
+    - name: Push Image to Github Registry
+      run: docker push docker.pkg.github.com/goneio/base-image/bi/php:${{ matrix.release
+        }}-${{ matrix.php }}-${{ matrix.platform }}

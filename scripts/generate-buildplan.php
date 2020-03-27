@@ -131,10 +131,9 @@ foreach(["Core", "Marshall", "PHP"] as $dockerfile) {
 // Marshall
 $yaml["jobs"]["Marshall"]["runs-on"] = $runsOn;
 $yaml["jobs"]["Marshall"]["needs"] = ["LintDockerfile"];
-$marshallImageName = "\${{ matrix.registry }}/marshall:\${{ matrix.platform }}";
+$marshallImageName = "marshall:\${{ matrix.platform }}";
 $yaml["jobs"]["Marshall"]["name"] = "Marshall \${{ matrix.platform }} \${{ matrix.registry }}";
 $yaml["jobs"]["Marshall"]["strategy"]["matrix"]["platform"] = array_keys($platforms);
-$yaml["jobs"]["Marshall"]["strategy"]["matrix"]["registry"] = array_values($tagPrefixes);
 foreach($platforms as $platformName => $platformBaseImage) {
     $yaml["jobs"]["Marshall"]["env"]["BASE_IMAGE_" . $platformName] = $platformBaseImage;
 }
@@ -156,10 +155,18 @@ $yaml["jobs"]["Marshall"]["steps"][] = [
     "run" => "docker build -f Dockerfile.Marshall --target marshall -t {$marshallImageName} --build-arg CORE_FROM=\$BASE_IMAGE_\${{ matrix.platform }} . "
 ];
 $yaml["jobs"]["Marshall"]["steps"] += $prePushSteps;
-$yaml["jobs"]["Marshall"]["steps"][] = [
-    "name" => "Push Image {$marshallImageName}",
-    "run" => "docker push {$marshallImageName}"
-];
+foreach($tagPrefixes as $registryName => $prefix) {
+    $yaml["jobs"]["Marshall"]["steps"][] = [
+        "name" => "Tag Image for $registryName",
+        "run" => "docker tag {$marshallImageName} {$prefix}/{$marshallImageName}"
+    ];
+}
+foreach($tagPrefixes as $registryName => $prefix) {
+    $yaml["jobs"]["Marshall"]["steps"][] = [
+        "name" => "Push Image to $registryName",
+        "run" => "docker push {$prefix}/{$marshallImageName}"
+    ];
+}
 
 // Cores
 #$yaml["jobs"]["Core"]["name"] = "PHP \${{ matrix.platform }} Core (on x86_64)";
@@ -167,13 +174,13 @@ $yaml["jobs"]["Core"]["runs-on"] = $runsOn;
 $yaml["jobs"]["Core"]["needs"] = ["Marshall"];
 $yaml["jobs"]["Core"]["strategy"]["matrix"]["php"] = $phpVersions;
 $yaml["jobs"]["Core"]["strategy"]["matrix"]["platform"] = array_keys($platforms);
-$yaml["jobs"]["Core"]["strategy"]["matrix"]["registry"] = array_values($tagPrefixes);
+$yaml["jobs"]["Core"]["env"] = $envs;
 $yaml["jobs"]["Core"]["steps"] = $setupSteps;
 $yaml["jobs"]["Core"]["steps"][] = [
     "run" => "echo \"::set-output name=php_install_list_envvar::$(echo \"PHP_\${{ matrix.php }}\" | sed 's|\.||')\"",
     "id" => "install_envvar",
 ];
-$imageNameCore = "\${{ matrix.registry }}/php:core-\${{ matrix.php }}-\${{ matrix.platform }}";
+$imageNameCore = "php:core-\${{ matrix.php }}-\${{ matrix.platform }}";
 $yaml["jobs"]["Core"]["steps"][] = [
     "name" => "Pull base image (marshall)",
     "run" => "docker pull {$marshallImageName} || true",
@@ -187,11 +194,18 @@ $yaml["jobs"]["Core"]["steps"][] = [
     "run"  => "docker build -f Dockerfile.Core --target php-core --build-arg \"PHP_VERSION=\${{ matrix.php }}\" --build-arg \"PHP_PACKAGES=\$\${{ steps.install_envvar.outputs.php_install_list_envvar }}\" --build-arg \"CORE_FROM={$marshallImageName}\" -t $imageNameCore ."
 ];
 $yaml["jobs"]["Core"]["steps"] += $prePushSteps;
-$yaml["jobs"]["Core"]["steps"][] = [
-    "name" => "Push Image $imageNameCore",
-    "run"  => "docker push $imageNameCore"
-];
-$yaml["jobs"]["Core"]["env"] = $envs;
+foreach($tagPrefixes as $registryName => $prefix) {
+    $yaml["jobs"]["Core"]["steps"][] = [
+        "name" => "Tag Image for $registryName",
+        "run" => "docker tag {$imageNameCore} {$prefix}/{$imageNameCore}"
+    ];
+}
+foreach($tagPrefixes as $registryName => $prefix) {
+    $yaml["jobs"]["Core"]["steps"][] = [
+        "name" => "Push Image to $registryName",
+        "run" => "docker push {$prefix}/{$imageNameCore}"
+    ];
+}
 
 // End containers
 #$yaml["jobs"]["PHP"]["name"] = "PHP \${{ matrix.platform }} \${{ matrix.release }} (on x86_64)";
@@ -200,9 +214,8 @@ $yaml["jobs"]["PHP"]["needs"] = ["Core"];
 $yaml["jobs"]["PHP"]["strategy"]["matrix"]["php"] = $phpVersions;
 $yaml["jobs"]["PHP"]["strategy"]["matrix"]["release"] = $releases;
 $yaml["jobs"]["PHP"]["strategy"]["matrix"]["platform"] = array_keys($platforms);
-$yaml["jobs"]["PHP"]["strategy"]["matrix"]["registry"] = array_values($tagPrefixes);
 $yaml["jobs"]["PHP"]["steps"] = $setupSteps;
-$imageNameRelease = "\${{ matrix.registry }}/php:\${{ matrix.release }}-\${{ matrix.php }}-\${{ matrix.platform }}";
+$imageNameRelease = "bi/php:\${{ matrix.release }}-\${{ matrix.php }}-\${{ matrix.platform }}";
 $yaml["jobs"]["PHP"]["steps"][] = [
     "name" => "Pull previous build",
     "run" => "docker pull $imageNameRelease || true",
@@ -216,10 +229,20 @@ $yaml["jobs"]["PHP"]["steps"][] = [
     "run"  => "docker build -f Dockerfile.PHP --target php-\${{ matrix.release }} --build-arg \"CORE_FROM=${imageNameCore}\" -t ${imageNameRelease} ."
 ];
 $yaml["jobs"]["PHP"]["steps"] += $prePushSteps;
-$yaml["jobs"]["PHP"]["steps"][] = [
-    "name" => "Push Image: $imageNameRelease",
-    "run"  => "docker push $imageNameRelease",
-];
+
+foreach($tagPrefixes as $registryName => $prefix) {
+    $yaml["jobs"]["PHP"]["steps"][] = [
+        "name" => "Tag Image for $registryName",
+        "run" => "docker tag {$imageNameRelease} {$prefix}/{$imageNameRelease}"
+    ];
+}
+foreach($tagPrefixes as $registryName => $prefix) {
+    $yaml["jobs"]["PHP"]["steps"][] = [
+        "name" => "Push Image to $registryName",
+        "run" => "docker push {$prefix}/{$imageNameRelease}"
+    ];
+}
+
 
 #unset($yaml['jobs']['Marshall']['needs'], $yaml['jobs']['Core']['needs'], $yaml['jobs']['PHP']['needs'], );
 #unset($yaml['jobs']['Core']);
