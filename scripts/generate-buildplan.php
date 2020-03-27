@@ -1,36 +1,18 @@
 #!/usr/bin/php
 <?php
-
+require_once(__DIR__ . "/vendor/autoload.php");
 use Symfony\Component\Yaml\Yaml as Yaml;
 $yamlInline = 5;
 $yamlIndent = 4;
 $yamlFlags = 0;
 $runsOn = "ubuntu-latest";
-$setupSteps = [
-    [
-        "uses" => "actions/checkout@v1"
-    ],[
-        "name" => "Enable multiarch support",
-        "run" => "docker run --rm --privileged multiarch/qemu-user-static --reset -p yes"
-    ]
-];
 
-$loginSteps = [
-    [
-        "name" => "Login to Registry: Docker Hub",
-        "run" => "docker login -u \${{secrets.DOCKER_HUB_USERNAME}} -p \${{secrets.DOCKER_HUB_PASSWORD}}",
-    ],[
-        "name" => "Login to Registry: GitHub",
-        "run" => "docker login docker.pkg.github.com -u \${{secrets.DOCKER_GITHUB_USERNAME}} -p \${{secrets.DOCKER_GITHUB_PASSWORD}}"
-    ]
-];
 $dir = __DIR__;
 
-require_once(__DIR__ . "/vendor/autoload.php");
 $platforms = [
     "x86_64" => "ubuntu:bionic",
     "arm64v8" => "arm64v8/ubuntu:18.04",
-    "arm32v6" => "arm32v6/ubuntu:18.04",
+    //"arm32v6" => "arm32v6/ubuntu:18.04",
 ];
 $releases = [
     "apache",
@@ -83,6 +65,26 @@ $phpPackagesAll = [
     "phpXX-zip",
     "postgresql-client"
 ];
+
+$setupSteps = [
+    [
+        "uses" => "actions/checkout@v1"
+    ],[
+        "name" => "Enable multiarch support",
+        "run" => "docker run --rm --privileged multiarch/qemu-user-static --reset -p yes"
+    ]
+];
+
+$loginSteps = [
+    [
+        "name" => "Login to Registry: Docker Hub",
+        "run" => "docker login -u \${{secrets.DOCKER_HUB_USERNAME}} -p \${{secrets.DOCKER_HUB_PASSWORD}}",
+    ],[
+        "name" => "Login to Registry: GitHub",
+        "run" => "docker login docker.pkg.github.com -u \${{secrets.DOCKER_GITHUB_USERNAME}} -p \${{secrets.DOCKER_GITHUB_PASSWORD}}"
+    ]
+];
+
 $phpPackages = [];
 $envs = [];
 foreach($phpVersions as $phpVersion){
