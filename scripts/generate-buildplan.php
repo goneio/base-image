@@ -9,6 +9,9 @@ $runsOn = "ubuntu-latest";
 $setupSteps = [
     [
         "uses" => "actions/checkout@v1"
+    ],[
+        "name" => "Enable multiarch support",
+        "run" => "docker run --rm --privileged multiarch/qemu-user-static --reset -p yes"
     ]
 ];
 

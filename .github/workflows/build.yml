@@ -33,6 +33,8 @@ jobs:
       BASE_IMAGE_arm64v8: arm64v8/ubuntu
     steps:
     - uses: actions/checkout@v1
+    - name: Enable multiarch support
+      run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - name: Pull base image
       run: docker pull arm64v8/ubuntu || true
     - name: Pull previous build
@@ -67,6 +69,8 @@ jobs:
         - docker.pkg.github.com/goneio/base-image
     steps:
     - uses: actions/checkout@v1
+    - name: Enable multiarch support
+      run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - run: echo "::set-output name=php_install_list_envvar::$(echo "PHP_${{ matrix.php
         }}" | sed 's|\.||')"
       id: install_envvar
@@ -142,6 +146,8 @@ jobs:
         - docker.pkg.github.com/goneio/base-image
     steps:
     - uses: actions/checkout@v1
+    - name: Enable multiarch support
+      run: docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     - name: Pull previous build
       run: docker pull ${{ matrix.registry }}/php:${{ matrix.release }}-${{ matrix.php
         }}-${{ matrix.platform }} || true
