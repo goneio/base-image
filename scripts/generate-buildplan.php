@@ -94,7 +94,13 @@ foreach($phpVersions as $phpVersion){
         $phpPackages[$version]["phpXX"] = "php{$version}";
     }
 
-    if($phpVersion > 7.2){
+    // remove APCU from before 7.0
+    if($phpVersion < 7.0){
+        unset($phpPackages[$version]['phpXX-apcu']);
+    }
+
+    // Remove mycrpt above 7.2, swap in libsodium
+    if($phpVersion >= 7.2){
         unset($phpPackages[$version]['phpXX-mcrypt']);
     }else{
         unset($phpPackages[$version]['php-sodium']);

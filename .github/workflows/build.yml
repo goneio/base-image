@@ -79,8 +79,8 @@ jobs:
         - arm64v8
       fail-fast: false
     env:
-      PHP_56: git mariadb-client php5.6 php5.6-apcu php5.6-bcmath php5.6-bz2 php5.6-cli
-        php5.6-curl php5.6-gd php5.6-imap php5.6-intl php5.6-json php5.6-ldap php5.6-mbstring
+      PHP_56: git mariadb-client php5.6 php5.6-bcmath php5.6-bz2 php5.6-cli php5.6-curl
+        php5.6-gd php5.6-imap php5.6-intl php5.6-json php5.6-ldap php5.6-mbstring
         php5.6-mcrypt php5.6-memcache php5.6-memcached php5.6-mongodb php5.6-mysql
         php5.6-opcache php5.6-pgsql php5.6-phpdbg php5.6-pspell php5.6-redis php5.6-soap
         php5.6-sqlite php5.6-xdebug php5.6-xml php5.6-zip postgresql-client
@@ -94,9 +94,9 @@ jobs:
         php7.1-mcrypt php7.1-memcache php7.1-memcached php7.1-mongodb php7.1-mysql
         php7.1-opcache php7.1-pgsql php7.1-phpdbg php7.1-pspell php7.1-redis php7.1-soap
         php7.1-sqlite php7.1-xdebug php7.1-xml php7.1-zip postgresql-client
-      PHP_72: git mariadb-client php7.2 php7.2-apcu php7.2-bcmath php7.2-bz2 php7.2-cli
-        php7.2-curl php7.2-gd php7.2-imap php7.2-intl php7.2-json php7.2-ldap php7.2-mbstring
-        php7.2-mcrypt php7.2-memcache php7.2-memcached php7.2-mongodb php7.2-mysql
+      PHP_72: git mariadb-client php-sodium php7.2 php7.2-apcu php7.2-bcmath php7.2-bz2
+        php7.2-cli php7.2-curl php7.2-gd php7.2-imap php7.2-intl php7.2-json php7.2-ldap
+        php7.2-mbstring php7.2-memcache php7.2-memcached php7.2-mongodb php7.2-mysql
         php7.2-opcache php7.2-pgsql php7.2-phpdbg php7.2-pspell php7.2-redis php7.2-soap
         php7.2-sqlite php7.2-xdebug php7.2-xml php7.2-zip postgresql-client
       PHP_73: git mariadb-client php-sodium php7.3 php7.3-apcu php7.3-bcmath php7.3-bz2
