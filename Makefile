@@ -516,5 +516,5 @@ docs:
 	./doc/gen
 
 generate:
-	./scripts/transmute-all.sh
+	./scripts/generate-buildplan.php
 
