@@ -139,7 +139,7 @@ EXPOSE 80
 
 # Create a healthcheck that makes sure our httpd is up
 HEALTHCHECK --interval=30s --timeout=3s \
-    CMD curl -f http://localhost/ || exit 1
+    CMD curl -f http://localhost/fpm-ping || exit 1
 
 FROM php-nginx AS php-nginx-onbuild
 # On build, add anything in with Dockerfile into /app
