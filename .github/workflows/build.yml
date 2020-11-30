@@ -80,9 +80,9 @@ jobs:
       - name: Mangle Envs
         id: vars
         run: |
-          echo ::set-output name=version::$(echo "${{ matrix.version }}" | tr -d '.')
-          echo ::set-output name=packages::PHP_PACKAGES_$(echo "${{ matrix.version }}" | tr -d '.')
-          echo ::set-output name=php_packages::$(echo PHP_PACKAGES_$(echo "${{ matrix.version }}" | tr -d '.'))
+          VERSION=$(echo "${{ matrix.version }}" | tr -d '.')
+          PACKAGE_LIST=PHP_PACKAGES_$VERSION
+          echo ::set-output name=php_packages::${!PACKAGE_LIST}
       - name: Show mangled envs
         run: |
           echo "Packages to be installed:"
