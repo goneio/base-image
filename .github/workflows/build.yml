@@ -64,9 +64,9 @@ jobs:
           date '+%Y-%m-%d %H:%M:%S' > marshall/marshall_build_date
           hostname > marshall/marshall_build_host
       - name: Show Package Var
-        run: echo "Package var is ${{ PACKAGE_VAR }}"
+        run: echo "Package var is ${{ env.PACKAGE_VAR }}"
       - name: Show Package Var contents
-        run: echo $${{ PACKAGE_VAR }}
+        run: echo $${{ env.PACKAGE_VAR }}
       - uses: docker/build-push-action@v2
         name: Build & Push
         with:
@@ -78,5 +78,5 @@ jobs:
             gone/php:${{ matrix.varient }}-${{ matrix.version }}${{ matrix.onbuild }}
             docker.pkg.github.com/goneio/base-image/php:${{ matrix.varient }}-${{ matrix.version }}${{ matrix.onbuild }}
           build-args:
-            PHP_PACKAGES=$${{ PACKAGE_VAR }}
+            PHP_PACKAGES=$${{ env.PACKAGE_VAR }}
 
