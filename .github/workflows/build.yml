@@ -53,8 +53,6 @@ jobs:
           echo ${{ steps.vars.outputs.packages }}
       - name: Show Package Var
         run: echo "Package var is ${{ env.PACKAGE_VAR }}"
-      - name: cheese
-        run: echo ${{ PHP_PACKAGES_7.4 }}
       - name: Show Package Var contents
         run: echo ${{ ${{ env.PACKAGE_VAR }} }}
       - name: Stop early
