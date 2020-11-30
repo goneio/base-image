@@ -7,4 +7,4 @@ printf 'Running: %b%s%b\n' $COLOUR_SUCCESS "${0##*/}" $COLOUR_RESET
 
 export LC_ALL=C
 export DEBIAN_FRONTEND=noninteractive
-APT_GET='apt-get install -yq --no-install-recommends '
+APT_GET='apt-get install -yqq --no-install-recommends '
