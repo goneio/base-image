@@ -26,6 +26,8 @@ FROM marshall AS php-core
 ARG PHP_PACKAGES
 COPY php-core/install-report.sh /usr/bin/install-report
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN echo "PHP packages to install:" && echo $PHP_PACKAGES
+
 RUN echo "APT::Acquire::Retries \"5\";" > /etc/apt/apt.conf.d/80-retries && \
     apt-get -qq update && \
     apt-get -yqq install --no-install-recommends \
