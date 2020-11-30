@@ -132,7 +132,8 @@ jobs:
           tags: |
             gone/php:${{ matrix.varient }}-${{ matrix.version }}${{ matrix.onbuild }}
             docker.pkg.github.com/goneio/base-image/php:${{ matrix.varient }}-${{ matrix.version }}${{ matrix.onbuild }}
-          build-args: ${{ steps.build_args.outputs.result }}
+          build-args: |
+            ${{ steps.build_args.outputs.result }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
