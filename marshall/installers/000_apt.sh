@@ -10,5 +10,5 @@ apt-get -qq update
 # System upgrade
 #apt-get -yq upgrade
 
-# Install apt-utils to prevent some screaming.
-$APT_GET apt apt-utils
+# Install apt-utils & ca-certificates to prevent some screaming.
+$APT_GET apt apt-utils ca-certificates
