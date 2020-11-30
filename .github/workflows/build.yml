@@ -87,8 +87,8 @@ jobs:
         run: |
           echo "Packages to be installed:"
           echo ${{ steps.vars.outputs.php_packages }}
-
-      - name: Build Args
+      - uses: actions/github-script@v3
+        name: Build Args
         id: build_args
         with:
           result-encoding: string
