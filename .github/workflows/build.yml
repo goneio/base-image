@@ -68,7 +68,7 @@ jobs:
       - name: Show Package Var contents
         run: echo $${{ env.PACKAGE_VAR }}
       - name: fruitloops
-        run : echo ${{ env.PHP_PACKAGES_${{ matrix.version }} }}
+        run : echo ${{ PHP_PACKAGES_${{ matrix.version }} }}
       - name: Stop early
         run: exit 255;
       - uses: docker/build-push-action@v2
