@@ -103,6 +103,13 @@ jobs:
           registry: docker.pkg.github.com
           username: ${{ secrets.DOCKER_GITHUB_USERNAME }}
           password: ${{ secrets.DOCKER_GITHUB_PASSWORD }}
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
       - name: Setup Marshall
         run: |
           git rev-parse --short HEAD > marshall/marshall_version
@@ -120,5 +127,7 @@ jobs:
             gone/php:${{ matrix.varient }}-${{ matrix.version }}${{ matrix.onbuild }}
             docker.pkg.github.com/goneio/base-image/php:${{ matrix.varient }}-${{ matrix.version }}${{ matrix.onbuild }}
           build-args: |
-            PHP_PACKAGES=$(echo ${{ steps.vars.outputs.php_packages }})
+            PHP_PACKAGES=$(${{ steps.vars.outputs.php_packages }})
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
 
