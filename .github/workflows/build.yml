@@ -54,7 +54,7 @@ jobs:
       - name: Show Package Var
         run: echo "Package var is ${{ env.PACKAGE_VAR }}"
       - name: Show Package Var contents
-        run: echo ${{ ${{ env.PACKAGE_VAR }} }}
+        run: echo ${{ env.PACKAGE_VAR }}
       - name: Stop early
         run: exit 255;
       - uses: actions/checkout@v1
