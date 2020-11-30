@@ -21,7 +21,7 @@ RUN echo "::group::Building Marshall" && \
     chmod +x /installers/install && \
     mv /marshall_* /etc && \
     /installers/install && \
-    rm -rf /installers &&
+    rm -rf /installers && \
     echo "::endgroup::"
 
 FROM marshall AS php-core
