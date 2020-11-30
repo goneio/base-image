@@ -87,6 +87,12 @@ jobs:
         run: |
           echo "Packages to be installed:"
           echo ${{ steps.vars.outputs.php_packages }}
+
+      - name: Build Args
+        id: build_args
+        with:
+          result-encoding: string
+          script: return `PHP_PACKAGES=${steps.vars.outputs.php_packages}`
       - uses: actions/checkout@v1
       - uses: docker/setup-qemu-action@v1
         name: Setup QEmu
@@ -126,8 +132,7 @@ jobs:
           tags: |
             gone/php:${{ matrix.varient }}-${{ matrix.version }}${{ matrix.onbuild }}
             docker.pkg.github.com/goneio/base-image/php:${{ matrix.varient }}-${{ matrix.version }}${{ matrix.onbuild }}
-          build-args:
-            - PHP_PACKAGES=$(${{ steps.vars.outputs.php_packages }})
+          build-args: ${{ steps.build_args.outputs.result }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
