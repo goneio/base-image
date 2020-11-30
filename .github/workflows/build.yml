@@ -92,7 +92,7 @@ jobs:
         id: build_args
         with:
           result-encoding: string
-          script: PHP_PACKAGES=${{ steps.vars.outputs.php_packages }}; return `PHP_PACKAGES=${!PHP_PACKAGES}`
+          script: PACKAGE_LIST=PHP_PACKAGES_$(echo "${{ matrix.version }}" | tr -d '.'); return `PHP_PACKAGES=${!PACKAGE_LIST}`
       - uses: actions/checkout@v1
       - uses: docker/setup-qemu-action@v1
         name: Setup QEmu
