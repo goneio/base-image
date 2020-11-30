@@ -46,6 +46,7 @@ jobs:
         run: |
           echo ::set-output name=version::$(echo "${{ matrix.version }}" | tr -d '.')
           echo ::set-output name=packages::PHP_PACKAGES_$(echo "${{ matrix.version }}" | tr -d '.')
+          echo ::set-output name=php_packages::$(echo $PHP_PACKAGES_$(echo "${{ matrix.version }}" | tr -d '.'))
       - uses: actions/checkout@v1
       - uses: docker/setup-qemu-action@v1
         name: Setup QEmu
@@ -78,5 +79,5 @@ jobs:
             gone/php:${{ matrix.varient }}-${{ matrix.version }}${{ matrix.onbuild }}
             docker.pkg.github.com/goneio/base-image/php:${{ matrix.varient }}-${{ matrix.version }}${{ matrix.onbuild }}
           build-args:
-            PHP_PACKAGES=$${{ steps.vars.outputs.packages }}
+            PHP_PACKAGES=$${{ steps.vars.outputs.php_packages }}
 
