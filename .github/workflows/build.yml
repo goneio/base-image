@@ -120,5 +120,5 @@ jobs:
             gone/php:${{ matrix.varient }}-${{ matrix.version }}${{ matrix.onbuild }}
             docker.pkg.github.com/goneio/base-image/php:${{ matrix.varient }}-${{ matrix.version }}${{ matrix.onbuild }}
           build-args: |
-            PHP_PACKAGES=$(echo echo ${{ steps.vars.outputs.php_packages }})
+            PHP_PACKAGES=$(echo ${{ steps.vars.outputs.php_packages }})
 
