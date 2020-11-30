@@ -6,14 +6,14 @@ on:
     - cron: '0 4 * * TUE'
 
 jobs:
-  lint:
-    name: Lint docker files
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@master
-      - uses: brpaz/hadolint-action@master
+  #lint:
+  #  name: Lint docker files
+  #  runs-on: ubuntu-20.04
+  #  steps:
+  #    - uses: actions/checkout@master
+  #    - uses: brpaz/hadolint-action@master
   build:
-    needs: [lint]
+    #needs: [lint]
     runs-on: ubuntu-20.04
     strategy:
       matrix:
