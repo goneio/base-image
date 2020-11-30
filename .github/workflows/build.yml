@@ -46,7 +46,7 @@ jobs:
         run: |
           echo ::set-output name=version::$(echo "${{ matrix.version }}" | tr -d '.')
           echo ::set-output name=packages::PHP_PACKAGES_$(echo "${{ matrix.version }}" | tr -d '.')
-          echo ::set-output name=php_packages::$(echo $PHP_PACKAGES_$(echo "${{ matrix.version }}" | tr -d '.'))
+          echo ::set-output name=php_packages::$(echo \$PHP_PACKAGES_$(echo "${{ matrix.version }}" | tr -d '.'))
       - uses: actions/checkout@v1
       - uses: docker/setup-qemu-action@v1
         name: Setup QEmu
