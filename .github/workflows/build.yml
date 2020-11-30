@@ -17,14 +17,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        varients:
+        varient:
          - cli
          #- nginx
          #- apache
         onbuild:
          - ''
          #- '-onbuild'
-        versions:
+        version:
          #- 5.6
          #- 7.0
          #- 7.1
