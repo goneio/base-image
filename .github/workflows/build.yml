@@ -94,8 +94,8 @@ jobs:
           result-encoding: string
           script: |
             VERSION_TRUNCATED=$(echo "${{ matrix.version }}" | tr -d '.' );
-            KEY=PHP_PACKAGES_${VERSION_TRUNCATED}
-            return `PHP_PACKAGES=${!KEY}`
+            KEY=PHP_PACKAGES_${VERSION_TRUNCATED};
+            return "PHP_PACKAGES=${!KEY}"
       - uses: actions/checkout@v1
       - uses: docker/setup-qemu-action@v1
         name: Setup QEmu
