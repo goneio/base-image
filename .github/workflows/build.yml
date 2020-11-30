@@ -50,10 +50,7 @@ jobs:
         run: |
           echo ${{ steps.vars.outputs.version }}
           echo ${{ steps.vars.outputs.packages }}
-      - name: Show Package Var
-        run: echo "Package var is ${{ env.PACKAGE_VAR }}"
-      - name: Show Package Var contents
-        run: echo ${{ env.PACKAGE_VAR }}
+          echo $${{ steps.vars.outputs.packages }}
       - name: Stop early
         run: exit 255;
       - uses: actions/checkout@v1
