@@ -44,8 +44,8 @@ jobs:
       - name: Mangle Envs
         id: vars
         run: |
-          echo ::set-output name=version::$(echo "${{ matrix.version }}" | tr '.' '')
-          echo ::set-output name=packages::PHP_PACKAGES_$(echo "${{ matrix.version }}" | tr '.' '')
+          echo ::set-output name=version::$(echo "${{ matrix.version }}" | tr -d '.')
+          echo ::set-output name=packages::PHP_PACKAGES_$(echo "${{ matrix.version }}" | tr -d '.')
       - name: Confirm mangled envs
         run: |
           echo ${{ steps.vars.outputs.version }}
