@@ -67,6 +67,8 @@ jobs:
         run: echo "Package var is ${{ env.PACKAGE_VAR }}"
       - name: Show Package Var contents
         run: echo $${{ env.PACKAGE_VAR }}
+      - name: Stop early
+        run: exit 255;
       - uses: docker/build-push-action@v2
         name: Build & Push
         with:
