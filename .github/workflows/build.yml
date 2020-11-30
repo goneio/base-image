@@ -63,10 +63,10 @@ jobs:
           git rev-parse --short HEAD > marshall/marshall_version
           date '+%Y-%m-%d %H:%M:%S' > marshall/marshall_build_date
           hostname > marshall/marshall_build_host
-      - name: Set ENV
-        run: |
-          echo "Package var is ${{ PACKAGE_VAR }}"
-          echo $${{ PACKAGE_VAR }}
+      - name: Show Package Var
+        run: echo "Package var is ${{ PACKAGE_VAR }}"
+      - name: Show Package Var contents
+        run: echo $${{ PACKAGE_VAR }}
       - uses: docker/build-push-action@v2
         name: Build & Push
         with:
