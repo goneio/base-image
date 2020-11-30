@@ -17,32 +17,25 @@ WORKDIR /app
 
 COPY ./marshall/ /
 
-RUN echo "::group::Building Marshall" && \
-    chmod +x /installers/install && \
+RUN chmod +x /installers/install && \
     mv /marshall_* /etc && \
     /installers/install && \
-    rm -rf /installers && \
-    echo "::endgroup::"
+    rm -rf /installers
 
 FROM marshall AS php-core
 ARG PHP_PACKAGES
 COPY php-core/install-report.sh /usr/bin/install-report
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-RUN echo "::group::Installing add-apt-repository dependencies" && \
-    echo "APT::Acquire::Retries \"5\";" > /etc/apt/apt.conf.d/80-retries && \
+RUN echo "APT::Acquire::Retries \"5\";" > /etc/apt/apt.conf.d/80-retries && \
     apt-get -qq update && \
     apt-get -yqq install --no-install-recommends \
         python3-software-properties \
         software-properties-common \
         && \
-    echo "::endgroup::" && \
-    echo "::group::Installing PHP Packages & Friends" && \
     echo "PHP packages to install:" && echo $PHP_PACKAGES && \
     add-apt-repository -y ppa:ondrej/php && \
     apt-get -qq update && \
     apt-get -yqq install --no-install-recommends $PHP_PACKAGES  &&\
-    echo "::endgroup::" && \
-    echo "::group::APT Cleanup" && \
     apt-get remove -yqq \
         software-properties-common \
         python-apt-common \
@@ -51,13 +44,9 @@ RUN echo "::group::Installing add-apt-repository dependencies" && \
         && \
     apt-get autoremove -yqq && \
     apt-get clean && \
-    echo "::endgroup::" && \
-    echo "::group::Installing Composer" && \
     curl https://getcomposer.org/composer-stable.phar --output /usr/local/bin/composer && \
     chmod +x /usr/local/bin/composer /usr/bin/install-report && \
     /usr/local/bin/composer --version && \
-    echo "::endgroup::" && \
-    echo "::group::Hard Cleanup & Install Report" && \
     /usr/bin/install-report && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/lib/dpkg/status.old /var/cache/debconf/templates.dat /var/log/dpkg.log /var/log/lastlog /var/log/apt/*.log && \
     rm -rf  /usr/bin/mariabackup \
@@ -77,9 +66,7 @@ RUN echo "::group::Installing add-apt-repository dependencies" && \
             /usr/bin/mysqlreport \
             /usr/bin/mysqlshow \
             /usr/bin/mysqlslap \
-            /usr/bin/mytop \
-    && \
-    echo "::endgroup::"
+            /usr/bin/mytop
 
 FROM php-core AS php-cli
 

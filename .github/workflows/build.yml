@@ -113,11 +113,12 @@ jobs:
         with:
           context: .
           target: php-${{ matrix.varient }}
-          platforms: linux/amd64,linux/arm64
+          #platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64
           push: true
           tags: |
             gone/php:${{ matrix.varient }}-${{ matrix.version }}${{ matrix.onbuild }}
             docker.pkg.github.com/goneio/base-image/php:${{ matrix.varient }}-${{ matrix.version }}${{ matrix.onbuild }}
           build-args: |
-            PHP_PACKAGES=${{ steps.vars.outputs.php_packages }}
+            PHP_PACKAGES=$(echo echo ${{ steps.vars.outputs.php_packages }})
 
