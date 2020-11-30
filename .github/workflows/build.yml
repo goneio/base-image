@@ -42,6 +42,15 @@ jobs:
       PHP_PACKAGES_8.0: git mariadb-client php-xdebug php8.0-apcu php8.0-bcmath php8.0-bz2 php8.0-cli php8.0-curl php8.0-gd php8.0-imap php8.0-imagick php8.0-intl php8.0-ldap             php8.0-mbstring               php8.0-memcache                                 php8.0-mysql php8.0-opcache php8.0-pgsql php8.0-phpdbg php8.0-pspell              php8.0-soap php8.0-sqlite php8.0-xdebug php8.0-xml php8.0-zip postgresql-client
       PACKAGE_VAR: env.PHP_PACKAGES_${{ matrix.version }}
     steps:
+      - name: Mangle Envs
+        id: vars
+        run: |
+          echo ::set-output name=version::$(echo ${matrix.version} | tr '.' '')
+          echo ::set-output name=packages::PHP_PACKAGES_$(echo ${matrix.version} | tr '.' '')
+      - name: Confirm mangled envs
+        run: |
+          echo ${{ steps.vars.outputs.version }}
+          echo ${{ steps.vars.outputs.packages }}
       - name: Show Package Var
         run: echo "Package var is ${{ env.PACKAGE_VAR }}"
       - name: cheese
