@@ -92,7 +92,10 @@ jobs:
         id: build_args
         with:
           result-encoding: string
-          script: return `VERSION_TRUNCATED=$(echo "${{ matrix.version }}" | tr -d '.' )\nKEY=PHP_PACKAGES_$VERSION_TRUNCATED\nPHP_PACKAGES=${!KEY}`
+          script: |
+            VERSION_TRUNCATED=$(echo "${{ matrix.version }}" | tr -d '.' );
+            KEY=PHP_PACKAGES_${VERSION_TRUNCATED}
+            return `PHP_PACKAGES=${!KEY}`
       - uses: actions/checkout@v1
       - uses: docker/setup-qemu-action@v1
         name: Setup QEmu
