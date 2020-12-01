@@ -51,7 +51,7 @@ jobs:
   build-php:
     needs: [lint]
     runs-on: ubuntu-20.04
-    continue-on-error: ${{ matrix.experimental }}
+    continue-on-error: ${{ matrix.can-fail }}
     strategy:
       matrix:
         varient:
