@@ -103,12 +103,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-      - uses: docker/login-action@v1
-        name: Login to Github Packages Registry
-        with:
-          registry: docker.pkg.github.com
-          username: ${{ secrets.DOCKER_GITHUB_USERNAME }}
-          password: ${{ secrets.DOCKER_GITHUB_PASSWORD }}
+      #- uses: docker/login-action@v1
+      #  name: Login to Github Packages Registry
+      #  with:
+      #    registry: docker.pkg.github.com
+      #    username: ${{ secrets.DOCKER_GITHUB_USERNAME }}
+      #    password: ${{ secrets.DOCKER_GITHUB_PASSWORD }}
       - name: Cache Docker layers
         uses: actions/cache@v2
         with:
@@ -131,7 +131,7 @@ jobs:
           push: true
           tags: |
             gone/php:${{ matrix.varient }}-${{ matrix.version }}${{ matrix.onbuild }}
-            docker.pkg.github.com/goneio/base-image/php:${{ matrix.varient }}-${{ matrix.version }}${{ matrix.onbuild }}
+            #docker.pkg.github.com/goneio/base-image/php:${{ matrix.varient }}-${{ matrix.version }}${{ matrix.onbuild }}
           build-args: |
             ${{ steps.build_args.outputs.result }}
           cache-from: type=local,src=/tmp/.buildx-cache
