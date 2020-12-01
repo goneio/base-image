@@ -59,7 +59,7 @@ jobs:
          - apache
         onbuild:
          - ''
-         - '-onbuild'
+        # - '-onbuild'
         version:
          - 5.6
          - 7.0
