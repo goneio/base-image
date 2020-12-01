@@ -129,3 +129,26 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
+  vanity-tags:
+    needs: [ build-php ]
+    runs-on: ubuntu-20.04
+    env:
+      latest-stable-version: 7.4
+    strategy:
+      fail-fast: false
+      matrix:
+        variant:
+          - cli
+          - nginx
+          - apache
+    steps:
+      - uses: docker/login-action@v1
+          name: Login to Docker Hub
+          with:
+            username: ${{ secrets.DOCKER_HUB_USERNAME }}
+            password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      - name: Retag gone/php:${{ matrix.variant }}-${{ env.latest-stable-version }} to gone/php:${{ matrix.variant }}
+        run: |
+          docker tag gone/php:${{ matrix.variant }}-${{ env.latest-stable-version }} gone/php:${{ matrix.variant }}
+          docker push gone/php:${{ matrix.variant }}
+
