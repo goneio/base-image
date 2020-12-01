@@ -54,7 +54,7 @@ jobs:
     continue-on-error: ${{ matrix.can-fail }}
     strategy:
       matrix:
-        varient:
+        variant:
          - cli
          - nginx
          - apache
@@ -126,10 +126,10 @@ jobs:
         name: Build & Push
         with:
           context: .
-          target: php-${{ matrix.varient }}
+          target: php-${{ matrix.variant }}
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: gone/php:${{ matrix.varient }}-${{ matrix.version }}${{ matrix.onbuild }}
+          tags: gone/php:${{ matrix.variant }}-${{ matrix.version }}${{ matrix.onbuild }}
           build-args: |
             ${{ steps.build_args.outputs.result }}
           cache-from: type=local,src=/tmp/.buildx-cache
