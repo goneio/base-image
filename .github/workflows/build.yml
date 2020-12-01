@@ -149,6 +149,7 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
       - name: Retag gone/php:${{ matrix.variant }}-${{ env.latest-stable-version }} to gone/php:${{ matrix.variant }}
         run: |
+          docker pull gone/php:${{ matrix.variant }}-${{ env.latest-stable-version }}
           docker tag gone/php:${{ matrix.variant }}-${{ env.latest-stable-version }} gone/php:${{ matrix.variant }}
           docker push gone/php:${{ matrix.variant }}
 
