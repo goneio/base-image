@@ -11,12 +11,22 @@ jobs:
     name: Lint docker files
     runs-on: ubuntu-20.04
     if: "!contains(github.event.head_commit.message, 'ci skip')"
+    strategy:
+      fail-fast: false
+      matrix:
+        dockerfile:
+          - Dockerfile.Core
+          - Dockerfile.Flavours
+          - Dockerfile.Marshall
+          - Dockerfile.Node
     steps:
       - uses: actions/checkout@master
       - uses: brpaz/hadolint-action@master
+        with:
+          dockerfile: ${{ matrix.dockerfile }}
 
   build-marshall:
-    needs: [lint]
+    needs: [ lint ]
     runs-on: ubuntu-20.04
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
@@ -114,7 +124,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache
 
   build-php-flavours:
-    needs: [lint, build-marshall]
+    needs: [ build-php-core ]
     runs-on: ubuntu-20.04
     if: "!contains(github.event.head_commit.message, 'ci skip')"
     strategy:
