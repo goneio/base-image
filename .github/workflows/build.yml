@@ -60,7 +60,6 @@ jobs:
           push: true
           tags: |
             benzine/marshall:latest
-            gchr.io/benzine-framework/docker-php:marshall
 
   build-php-core:
     name: "Build PHP Core"
@@ -120,7 +119,6 @@ jobs:
           push: true
           tags: |
             benzine/php:core-${{ matrix.version }}
-            ghcr.io/benzine-framework/docker-php:core-${{ matrix.variant }}
           build-args: |
             ${{ steps.build_args.outputs.result }}
           cache-from: type=local,src=/tmp/.buildx-cache
@@ -191,7 +189,6 @@ jobs:
           push: true
           tags: |
             benzine/php:${{ matrix.variant }}-${{ matrix.version }}${{ matrix.onbuild }}
-            ghcr.io/benzine-framework/docker-php:${{ matrix.variant }}-${{ matrix.version }}${{ matrix.onbuild }}
           build-args: |
             ${{ steps.build_args.outputs.result }}
           cache-from: type=local,src=/tmp/.buildx-cache
