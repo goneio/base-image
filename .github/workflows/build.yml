@@ -25,6 +25,7 @@ jobs:
           dockerfile: ${{ matrix.dockerfile }}
 
   build-marshall:
+    name: "Build Marshall"
     needs: [ lint ]
     runs-on: ubuntu-20.04
     steps:
@@ -57,9 +58,12 @@ jobs:
           target: marshall
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: benzine/marshall:latest
+          tags: |
+            benzine/marshall:latest
+            gchr.io/benzine-framework/docker-php:marshall
 
   build-php-core:
+    name: "Build PHP Core"
     needs: [ lint, build-marshall ]
     runs-on: ubuntu-20.04
     strategy:
@@ -116,13 +120,14 @@ jobs:
           push: true
           tags: |
             benzine/php:core-${{ matrix.version }}
-            ghcr.io/benzine-framework/php:$core-{{ matrix.variant }}
+            ghcr.io/benzine-framework/docker-php:core-${{ matrix.variant }}
           build-args: |
             ${{ steps.build_args.outputs.result }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
   build-php-flavours:
+    name: "Build PHP Flavours"
     needs: [ build-php-core ]
     runs-on: ubuntu-20.04
     strategy:
@@ -186,7 +191,7 @@ jobs:
           push: true
           tags: |
             benzine/php:${{ matrix.variant }}-${{ matrix.version }}${{ matrix.onbuild }}
-            ghcr.io/benzine-framework/php:${{ matrix.variant }}-${{ matrix.version }}${{ matrix.onbuild }}
+            ghcr.io/benzine-framework/docker-php:${{ matrix.variant }}-${{ matrix.version }}${{ matrix.onbuild }}
           build-args: |
             ${{ steps.build_args.outputs.result }}
           cache-from: type=local,src=/tmp/.buildx-cache
