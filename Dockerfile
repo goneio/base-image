@@ -90,7 +90,8 @@ ONBUILD RUN (composer install; exit 0) && \
             (composer dumpautoload -o; exit 0) && \
             /usr/bin/install-report
 
-FROM php-core AS php-nginx
+ARG PHP_CORE_VERSION
+FROM ${PHP_CORE_VERSION} AS php-nginx
 ARG PHP_VERSION
 ARG PHP_MEMORY_LIMIT=128M
 ARG PHP_DATA_MAX_SIZE=1024M
