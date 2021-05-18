@@ -10,7 +10,6 @@ jobs:
   lint:
     name: Lint docker files
     runs-on: ubuntu-20.04
-    if: "!contains(github.event.head_commit.message, 'ci skip')"
     strategy:
       fail-fast: false
       matrix:
@@ -28,7 +27,6 @@ jobs:
   build-marshall:
     needs: [ lint ]
     runs-on: ubuntu-20.04
-    if: "!contains(github.event.head_commit.message, 'ci skip')"
     steps:
       - uses: actions/checkout@v1
       - uses: docker/setup-qemu-action@v1
@@ -55,6 +53,7 @@ jobs:
         name: Build & Push
         with:
           context: .
+          file: Dockerfile.Marshall
           target: marshall
           platforms: linux/amd64,linux/arm64
           push: true
@@ -63,7 +62,6 @@ jobs:
   build-php-core:
     needs: [ lint, build-marshall ]
     runs-on: ubuntu-20.04
-    if: "!contains(github.event.head_commit.message, 'ci skip')"
     strategy:
       fail-fast: false
       matrix:
@@ -112,6 +110,7 @@ jobs:
         name: Build & Push
         with:
           context: .
+          file: Dockerfile.Core
           target: php-core
           platforms: linux/amd64,linux/arm64
           push: true
@@ -126,7 +125,6 @@ jobs:
   build-php-flavours:
     needs: [ build-php-core ]
     runs-on: ubuntu-20.04
-    if: "!contains(github.event.head_commit.message, 'ci skip')"
     strategy:
       fail-fast: false
       matrix:
@@ -182,6 +180,7 @@ jobs:
         name: Build & Push
         with:
           context: .
+          file: Dockerfile.Flavours
           target: php-${{ matrix.variant }}
           platforms: linux/amd64,linux/arm64
           push: true
