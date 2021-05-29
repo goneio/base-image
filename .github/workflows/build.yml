@@ -63,7 +63,7 @@ jobs:
 
   php-build-core:
     name: "Build PHP Core"
-    needs: [ lint, build-marshall ]
+    needs: [ lint, marshall-build ]
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
@@ -125,7 +125,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache
   php-build-flavours:
     name: "Build PHP Flavours"
-    needs: [ build-php-core ]
+    needs: [ php-build-core ]
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
@@ -194,7 +194,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache
   php-vanity-tags:
     name: Vanity Tags
-    needs: [ build-php-flavours ]
+    needs: [ php-build-flavours ]
     runs-on: ubuntu-20.04
     env:
       latest-stable-version: "7.4"
@@ -220,8 +220,6 @@ jobs:
           docker push gone/php:${{ matrix.variant }}-${{ env.latest-stable-version }}
           docker tag benzine/php:${{ matrix.variant }}-${{ env.latest-stable-version }} gone/php:${{ matrix.variant }}
           docker push gone/php:${{ matrix.variant }}
-
-
 
   mariadb-build:
     runs-on: ubuntu-20.04
