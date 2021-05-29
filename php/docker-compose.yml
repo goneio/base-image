@@ -6,14 +6,14 @@ services:
     build:
       target: marshall
       dockerfile: Dockerfile.Marshall
-      context: .
+      context: ..
 
   php-core-7.3:
     image: benzine/php:core-7.3
     build:
       target: php-core
       dockerfile: Dockerfile.Core
-      context: .
+      context: ..
       args:
         PHP_VERSION: 7.3
         PHP_PACKAGES: git mariadb-client php7.3-apcu php7.3-bcmath php7.3-bz2 php7.3-cli php7.3-curl php7.3-gd php7.3-imap php7.3-imagick php7.3-intl php7.3-ldap php7.3-mbstring php7.3-memcache php7.3-mysql php7.3-opcache php7.3-pgsql php7.3-phpdbg php7.3-pspell php7.3-redis php7.3-soap php7.3-sqlite php7.3-xdebug php7.3-xml php7.3-zip postgresql-client
@@ -22,7 +22,7 @@ services:
     build:
       target: php-core
       dockerfile: Dockerfile.Core
-      context: .
+      context: ..
       args:
         PHP_VERSION: 7.4
         PHP_PACKAGES: git mariadb-client php7.4-apcu php7.4-bcmath php7.4-bz2 php7.4-cli php7.4-curl php7.4-gd php7.4-imap php7.4-imagick php7.4-intl php7.4-ldap php7.4-mbstring php7.4-memcache php7.4-mysql php7.4-opcache php7.4-pgsql php7.4-phpdbg php7.4-pspell php7.4-redis php7.4-soap php7.4-sqlite php7.4-xdebug php7.4-xml php7.4-zip postgresql-client
@@ -31,7 +31,7 @@ services:
     build:
       target: php-core
       dockerfile: Dockerfile.Core
-      context: .
+      context: ..
       args:
         PHP_VERSION: 8.0
         PHP_PACKAGES: git mariadb-client php8.0-apcu php8.0-bcmath php8.0-bz2 php8.0-cli php8.0-curl php8.0-gd php8.0-imap php8.0-imagick php8.0-intl php8.0-ldap php8.0-mbstring php8.0-memcache php8.0-mysql php8.0-opcache php8.0-pgsql php8.0-phpdbg php8.0-pspell php8.0-redis php8.0-soap php8.0-sqlite php8.0-xdebug php8.0-xml php8.0-zip postgresql-client
@@ -41,7 +41,7 @@ services:
     build:
       target: php-cli
       dockerfile: Dockerfile.Flavours
-      context: .
+      context: ..
       args:
         PHP_CORE_VERSION: benzine/php:core-7.3
   php-cli-7.4:
@@ -49,7 +49,7 @@ services:
     build:
       target: php-cli
       dockerfile: Dockerfile.Flavours
-      context: .
+      context: ..
       args:
         PHP_CORE_VERSION: benzine/php:core-7.4
   php-cli-8.0:
@@ -57,7 +57,7 @@ services:
     build:
       target: php-cli
       dockerfile: Dockerfile.Flavours
-      context: .
+      context: ..
       args:
         PHP_CORE_VERSION: benzine/php:core-8.0
 
@@ -66,7 +66,7 @@ services:
     build:
       target: php-nginx
       dockerfile: Dockerfile.Flavours
-      context: .
+      context: ..
       args:
         PHP_CORE_VERSION: benzine/php:core-7.3
   php-nginx-7.4:
@@ -74,7 +74,7 @@ services:
     build:
       target: php-nginx
       dockerfile: Dockerfile.Flavours
-      context: .
+      context: ..
       args:
         PHP_CORE_VERSION: benzine/php:core-7.4
   php-nginx-8.0:
@@ -82,7 +82,7 @@ services:
     build:
       target: php-nginx
       dockerfile: Dockerfile.Flavours
-      context: .
+      context: ..
       args:
         PHP_CORE_VERSION: benzine/php:core-8.0
 
@@ -91,7 +91,7 @@ services:
     build:
       target: php-apache
       dockerfile: Dockerfile.Flavours
-      context: .
+      context: ..
       args:
         PHP_CORE_VERSION: benzine/php:core-7.3
   php-apache-7.4:
@@ -99,7 +99,7 @@ services:
     build:
       target: php-apache
       dockerfile: Dockerfile.Flavours
-      context: .
+      context: ..
       args:
         PHP_CORE_VERSION: benzine/php:core-7.4
   php-apache-8.0:
@@ -107,7 +107,7 @@ services:
     build:
       target: php-apache
       dockerfile: Dockerfile.Flavours
-      context: .
+      context: ..
       args:
         PHP_CORE_VERSION: benzine/php:core-8.0
           
