@@ -195,7 +195,7 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache
 
   vanity-tags:
-    needs: [ build-php ]
+    needs: [ build-php-flavours ]
     runs-on: ubuntu-20.04
     env:
       latest-stable-version: "7.4"
