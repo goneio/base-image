@@ -16,9 +16,9 @@ CMD ["runsvdir", "-P", "/etc/service"]
 WORKDIR /app
 ENV PATH="/app:/app/bin:/app/vendor/bin:${PATH}"
 
-COPY ./marshall/ /
+COPY marshall/installers /installers
+COPY marshall/etc /etc
+COPY marshall/usr /usr
 
-RUN chmod +x /installers/install && \
-    mv /marshall_* /etc && \
-    /installers/install && \
-    rm -rf /installers
+RUN /installers/install && \
+    rm -rf /marshall /installers

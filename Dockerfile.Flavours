@@ -1,5 +1,5 @@
-
-FROM php-core AS php-cli
+ARG PHP_CORE_VERSION
+FROM ${PHP_CORE_VERSION} AS php-cli
 
 # Install a funky cool repl.
 RUN composer global require -q psy/psysh:@stable && \
@@ -132,7 +132,8 @@ ONBUILD RUN (composer install; exit 0) && \
             (composer dumpautoload -o; exit 0) && \
             /usr/bin/install-report
 
-FROM php-core AS php-apache
+ARG PHP_CORE_VERSION
+FROM ${PHP_CORE_VERSION} AS php-apache
 ARG PHP_VERSION
 RUN apt-get -qq update && \
     apt-get -yqq install --no-install-recommends \
