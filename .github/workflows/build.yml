@@ -24,7 +24,7 @@ jobs:
         with:
           dockerfile: ${{ matrix.dockerfile }}
 
-  build-marshall:
+  marshall-build:
     name: "Build Marshall"
     needs: [ lint ]
     runs-on: ubuntu-20.04
@@ -61,7 +61,7 @@ jobs:
           tags: |
             benzine/marshall:latest
 
-  build-php-core:
+  php-build-core:
     name: "Build PHP Core"
     needs: [ lint, build-marshall ]
     runs-on: ubuntu-20.04
@@ -123,8 +123,7 @@ jobs:
             ${{ steps.build_args.outputs.result }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
-
-  build-php-flavours:
+  php-build-flavours:
     name: "Build PHP Flavours"
     needs: [ build-php-core ]
     runs-on: ubuntu-20.04
@@ -193,8 +192,7 @@ jobs:
             ${{ steps.build_args.outputs.result }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
-
-  vanity-tags:
+  php-vanity-tags:
     name: Vanity Tags
     needs: [ build-php-flavours ]
     runs-on: ubuntu-20.04
@@ -224,3 +222,70 @@ jobs:
           docker push gone/php:${{ matrix.variant }}
 
 
+
+  mariadb-build:
+    runs-on: ubuntu-20.04
+    needs: [ lint ]
+    steps:
+      - uses: actions/checkout@v1
+      - uses: docker/setup-qemu-action@v1
+        name: Setup QEmu
+      - uses: docker/setup-buildx-action@v1
+        name: Setup Docker Buildx
+      - uses: docker/login-action@v1
+        name: Login to Docker Hub
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      - uses: docker/build-push-action@v2
+        name: Build & Push
+        with:
+          context: mariadb
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            benzine/mariadb
+  redis-build:
+    runs-on: ubuntu-20.04
+    needs: [ lint ]
+    steps:
+      - uses: actions/checkout@v1
+      - uses: docker/setup-qemu-action@v1
+        name: Setup QEmu
+      - uses: docker/setup-buildx-action@v1
+        name: Setup Docker Buildx
+      - uses: docker/login-action@v1
+        name: Login to Docker Hub
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      - uses: docker/build-push-action@v2
+        name: Build & Push
+        with:
+          context: redis/
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            benzine/redis
+  wordpress-build:
+    runs-on: ubuntu-20.04
+    needs: [ lint, php-build-flavours ]
+    steps:
+      - uses: actions/checkout@v1
+      - uses: docker/setup-qemu-action@v1
+        name: Setup QEmu
+      - uses: docker/setup-buildx-action@v1
+        name: Setup Docker Buildx
+      - uses: docker/login-action@v1
+        name: Login to Docker Hub
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_PASSWORD }}
+      - uses: docker/build-push-action@v2
+        name: Build & Push
+        with:
+          context: wordpress/
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            matthewbaggett/wordpress

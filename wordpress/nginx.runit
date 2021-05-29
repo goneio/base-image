@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+WP_ROOT="${WP_ROOT:-/app}"
+sed -i "s|root .*|root ${WP_ROOT};|" /etc/nginx/sites-enabled/default
+sed -i "s|root .*|root ${WP_ROOT};|" /etc/nginx/sites-enabled/default-ssl
+
+/usr/sbin/nginx
