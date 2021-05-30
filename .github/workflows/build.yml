@@ -157,7 +157,7 @@ jobs:
         id: build_args
         with:
           result-encoding: string
-          script: return `PHP_VERSION=${{ matrix.version }}\nPHP_CORE_VERSION="benzine/php:core-${{ matrix.version }}"`
+          script: return `PHP_VERSION=${{ matrix.version }}\nPHP_CORE_VERSION=benzine/php:core-${{ matrix.version }}`
       - uses: actions/checkout@v1
       - uses: docker/setup-qemu-action@v1
         name: Setup QEmu
