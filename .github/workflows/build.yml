@@ -33,9 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - uses: docker/setup-qemu-action@v1
-        name: Setup QEmu
       - uses: docker/setup-buildx-action@v1
-        name: Setup Docker Buildx
       - uses: docker/login-action@v1
         name: Login to Docker Hub
         with:
@@ -100,10 +98,8 @@ jobs:
           result-encoding: string
           script: return `PHP_PACKAGES=${{ steps.vars.outputs.php_packages }}\nPHP_VERSION=${{ matrix.version }}\nPHP_CORE_VERSION=benzine/php:core-${{ matrix.version }}`
       - uses: actions/checkout@v1
-#      - uses: docker/setup-qemu-action@v1
-#        name: Setup QEmu
-#      - uses: docker/setup-buildx-action@v1
-#        name: Setup Docker Buildx
+      - uses: docker/setup-qemu-action@v1
+      - uses: docker/setup-buildx-action@v1
       - uses: docker/login-action@v1
         name: Login to Docker Hub
         with:
@@ -160,9 +156,7 @@ jobs:
           script: return `PHP_VERSION=${{ matrix.version }}\nPHP_CORE_VERSION=benzine/php:core-${{ matrix.version }}`
       - uses: actions/checkout@v1
       - uses: docker/setup-qemu-action@v1
-        name: Setup QEmu
       - uses: docker/setup-buildx-action@v1
-        name: Setup Docker Buildx
       - uses: docker/login-action@v1
         name: Login to Docker Hub
         with:
@@ -225,9 +219,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - uses: docker/setup-qemu-action@v1
-        name: Setup QEmu
       - uses: docker/setup-buildx-action@v1
-        name: Setup Docker Buildx
       - uses: docker/login-action@v1
         name: Login to Docker Hub
         with:
@@ -248,9 +240,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - uses: docker/setup-qemu-action@v1
-        name: Setup QEmu
       - uses: docker/setup-buildx-action@v1
-        name: Setup Docker Buildx
       - uses: docker/login-action@v1
         name: Login to Docker Hub
         with:
@@ -271,9 +261,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - uses: docker/setup-qemu-action@v1
-        name: Setup QEmu
       - uses: docker/setup-buildx-action@v1
-        name: Setup Docker Buildx
       - uses: docker/login-action@v1
         name: Login to Docker Hub
         with:
