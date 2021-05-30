@@ -4,7 +4,7 @@ on:
   workflow_run:
     workflows:
       - Build PHP Flavours
-    branches: [ * ]
+    branches: [ 'master', 'feature/**' ]
     types:
       - completed
 

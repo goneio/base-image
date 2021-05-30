@@ -10,7 +10,7 @@ on:
   workflow_run:
     workflows:
       - Build PHP Core
-    branches: [ * ]
+    branches: [ 'master', 'feature/**' ]
     types:
       - completed
 
