@@ -117,8 +117,6 @@ jobs:
             benzine/php:core-${{ matrix.version }}
           build-args: |
             ${{ steps.build_args.outputs.result }}
-#          cache-from: type=local,src=/tmp/.buildx-cache
-#          cache-to: type=local,dest=/tmp/.buildx-cache
   php-build-flavours:
     name: "Build PHP Flavours"
     needs: [ php-build-core ]
@@ -162,13 +160,6 @@ jobs:
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}
-      - name: Cache Docker layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
       - uses: docker/build-push-action@v2
         name: Build & Push
         with:
@@ -181,8 +172,6 @@ jobs:
             benzine/php:${{ matrix.variant }}-${{ matrix.version }}
           build-args: |
             ${{ steps.build_args.outputs.result }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache
   php-vanity-tags:
     name: Vanity Tags
     needs: [ php-build-flavours ]
