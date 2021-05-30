@@ -16,7 +16,7 @@ jobs:
 
   php-build-core:
     name: "Build PHP Core"
-    runs-on: ubuntu-20.04
+    runs-on: self-hosted
     strategy:
       fail-fast: false
       matrix:

@@ -14,7 +14,7 @@ on:
 jobs:
   mariadb-build:
     name: "MariaDB with Healthchecks"
-    runs-on: ubuntu-20.04
+    runs-on: self-hosted
     needs: [ lint ]
     steps:
       - uses: actions/checkout@v1

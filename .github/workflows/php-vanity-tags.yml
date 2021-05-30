@@ -11,7 +11,7 @@ on:
 jobs:
   php-vanity-tags:
     name: Vanity Tags
-    runs-on: ubuntu-20.04
+    runs-on: self-hosted
     env:
       latest-stable-version: "7.4"
     strategy:
