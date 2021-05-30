@@ -21,6 +21,7 @@ ARG PHP_MEMORY_LIMIT=128M
 ARG PHP_DATA_MAX_SIZE=1024M
 ENV PHPFPM_MAX_CHILDREN=25
 COPY nginx /conf
+COPY self-signed-certificates /certs
 
 RUN apt-get -qq update && \
     # Install pre-dependencies to use apt-key.
@@ -76,12 +77,12 @@ RUN apt-get -qq update && \
     mv /conf/NginxDefault /etc/nginx/sites-enabled/default && \
     mv /conf/NginxSSL /etc/nginx/sites-enabled/default-ssl && \
     # Generate self-signed certificates
-    mkdir /certs && \
-    openssl req -x509 -nodes -days 36500 -newkey rsa:2048 \
-        -subj "/C=US/ST=Florida/L=Miami/O=Example Group/CN=example.org" \
-        -keyout /certs/example.key \
-        -out /certs/example.crt \
-    && \
+    #mkdir /certs && \
+    #openssl req -x509 -nodes -days 36500 -newkey rsa:2048 \
+    #    -subj "/C=US/ST=Florida/L=Miami/O=Example Group/CN=example.org" \
+    #    -keyout /certs/example.key \
+    #    -out /certs/example.crt \
+    #&& \
     # Create runit service directories
     mkdir -p /etc/service/nginx \
              /etc/service/php-fpm \
