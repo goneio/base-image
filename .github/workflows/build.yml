@@ -14,10 +14,11 @@ jobs:
       fail-fast: false
       matrix:
         dockerfile:
-          - php/Dockerfile.Core
-          - php/Dockerfile.Flavours
-          - php/Dockerfile.Marshall
-          - php/Dockerfile.Node
+          - marshall/Dockerfile
+          - php/Dockerfile
+          - node/Dockerfile
+          - mariadb/Dockerfile
+          - redis/Dockerfile
     steps:
       - uses: actions/checkout@master
       - uses: brpaz/hadolint-action@master
@@ -53,9 +54,7 @@ jobs:
       - uses: docker/build-push-action@v2
         name: Build & Push
         with:
-          context: php/.
-          file: Dockerfile.Marshall
-          target: marshall
+          context: marshall
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
@@ -112,8 +111,8 @@ jobs:
       - uses: docker/build-push-action@v2
         name: Build & Push
         with:
-          context: php/.
-          file: Dockerfile.Core
+          context: php
+          file: Dockerfile
           target: php-core
           platforms: linux/amd64,linux/arm64
           push: true
@@ -182,7 +181,7 @@ jobs:
         name: Build & Push
         with:
           context: php/.
-          file: Dockerfile.Flavours
+          file: Dockerfile
           target: php-${{ matrix.variant }}
           platforms: linux/amd64,linux/arm64
           push: true
@@ -222,6 +221,7 @@ jobs:
           docker push gone/php:${{ matrix.variant }}
 
   mariadb-build:
+    name: "MariaDB with Healthchecks"
     runs-on: ubuntu-20.04
     needs: [ lint ]
     steps:
@@ -244,6 +244,7 @@ jobs:
           tags: |
             benzine/mariadb
   redis-build:
+    name: "Redis with Healthchecks"
     runs-on: ubuntu-20.04
     needs: [ lint ]
     steps:
@@ -260,12 +261,13 @@ jobs:
       - uses: docker/build-push-action@v2
         name: Build & Push
         with:
-          context: redis/
+          context: redis
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
             benzine/redis
   wordpress-build:
+    name: "Bake Wordpress Container"
     runs-on: ubuntu-20.04
     needs: [ lint, php-build-flavours ]
     steps:
@@ -282,7 +284,7 @@ jobs:
       - uses: docker/build-push-action@v2
         name: Build & Push
         with:
-          context: wordpress/
+          context: wordpress
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |

@@ -1,4 +1,4 @@
-FROM ubuntu:bionic AS marshall
+FROM ubuntu:bionic
 
 LABEL maintainer="Matthew Baggett <matthew@baggett.me>"
 
@@ -10,15 +10,14 @@ ENV DEBIAN_FRONTEND="teletype" \
     COLOUR_NONE='\e[39m' \
     DEFAULT_TZ='Europe/London'
 
-
 CMD ["runsvdir", "-P", "/etc/service"]
 
 WORKDIR /app
 ENV PATH="/app:/app/bin:/app/vendor/bin:${PATH}"
 
-COPY marshall/installers /installers
-COPY marshall/etc /etc
-COPY marshall/usr /usr
+COPY installers /installers
+COPY etc /etc
+COPY usr /usr
 
 RUN /installers/install && \
     rm -rf /marshall /installers

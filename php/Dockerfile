@@ -1,5 +1,65 @@
+# hadolint ignore=DL3007
+FROM benzine/marshall:latest AS php-core
+LABEL maintainer="Matthew Baggett <matthew@baggett.me>"
+ARG PHP_PACKAGES
+COPY php-core/install-report.sh /usr/bin/install-report
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+RUN echo "APT::Acquire::Retries \"5\";" > /etc/apt/apt.conf.d/80-retries && \
+    echo "Acquire::http::No-Cache=true;" > /etc/apt/apt.conf.d/80-no-cache && \
+    echo "Acquire::http::Pipeline-Depth=0;" > /etc/apt/apt.conf.d/80-no-pipeline && \
+    apt-get -qq update && \
+    apt-get -yqq install --no-install-recommends \
+        python3-software-properties \
+        software-properties-common \
+        && \
+    echo "PHP packages to install:" && echo $PHP_PACKAGES && \
+    add-apt-repository -y ppa:ondrej/php && \
+    apt-get -qq update && \
+    apt-get -yqq install --no-install-recommends $PHP_PACKAGES  &&\
+    apt-get remove -yqq \
+        software-properties-common \
+        python-apt-common \
+        python3-software-properties \
+        python3.5 python3.5-minimal libpython3.5-minimal \
+        && \
+    apt-get autoremove -yqq && \
+    apt-get clean && \
+    curl https://getcomposer.org/composer-stable.phar --output /usr/local/bin/composer && \
+    chmod +x /usr/local/bin/composer /usr/bin/install-report && \
+    /usr/local/bin/composer --version && \
+    /usr/bin/install-report && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/lib/dpkg/status.old /var/cache/debconf/templates.dat /var/log/dpkg.log /var/log/lastlog /var/log/apt/*.log && \
+    rm -rf  /usr/bin/mariabackup \
+            /usr/bin/mysql_embedded \
+            /usr/bin/mysql_find_rows \
+            /usr/bin/mysql_fix_extensions \
+            /usr/bin/mysql_waitpid \
+            /usr/bin/mysqlaccess \
+            /usr/bin/mysqlanalyze \
+            /usr/bin/mysqlcheck \
+            /usr/bin/mysqldump \
+            /usr/bin/mysqldumpslow \
+            /usr/bin/mysqlimport \
+            /usr/bin/mysqloptimize \
+            /usr/bin/mysqlrepair \
+            /usr/bin/mysqlreport \
+            /usr/bin/mysqlshow \
+            /usr/bin/mysqlslap \
+            /usr/bin/mytop
+
+FROM php-core AS php-cli
+
+# Install a funky cool repl.
+RUN composer global require -q psy/psysh:@stable && \
+    ln -s /root/.composer/vendor/psy/psysh/bin/psysh /usr/local/bin/repl && \
+    /usr/local/bin/repl -v && \
+    composer clear-cache
+
+COPY php+cli/psysh-config.php /root/.config/psysh/config.php
+
 ARG PHP_CORE_VERSION
 FROM ${PHP_CORE_VERSION} AS php-cli
+LABEL maintainer="Matthew Baggett <matthew@baggett.me>"
 
 # Install a funky cool repl.
 RUN composer global require -q psy/psysh:@stable && \
@@ -20,6 +80,7 @@ ONBUILD RUN (composer install; exit 0) && \
 
 ARG PHP_CORE_VERSION
 FROM ${PHP_CORE_VERSION} AS php-nginx
+LABEL maintainer="Matthew Baggett <matthew@baggett.me>"
 ARG PHP_VERSION
 ARG PHP_MEMORY_LIMIT=128M
 ARG PHP_DATA_MAX_SIZE=1024M
@@ -134,6 +195,7 @@ ONBUILD RUN (composer install; exit 0) && \
 
 ARG PHP_CORE_VERSION
 FROM ${PHP_CORE_VERSION} AS php-apache
+LABEL maintainer="Matthew Baggett <matthew@baggett.me>"
 ARG PHP_VERSION
 RUN apt-get -qq update && \
     apt-get -yqq install --no-install-recommends \

@@ -84,9 +84,9 @@ RUN apt-get -qq update && \
 
 FROM nodejs AS nodejs-onbuild
 
-ONBUILD COPY ./ /app
+ONBUILD COPY ../php /app
 
 FROM nodejs-compiler AS nodejs-compiler-onbuild
 
-ONBUILD COPY ./ /app
+ONBUILD COPY ../php /app
 
