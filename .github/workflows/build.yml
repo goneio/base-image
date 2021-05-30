@@ -113,7 +113,7 @@ jobs:
         name: Build & Push
         with:
           context: php
-          dockerfile: php/Dockerfile.Core
+          file: php/Dockerfile.Core
           target: php-core
           platforms: linux/amd64,linux/arm64
           push: true
@@ -182,7 +182,7 @@ jobs:
         name: Build & Push
         with:
           context: php
-          dockerfile: php/Dockerfile.Flavours
+          file: php/Dockerfile.Flavours
           target: php-${{ matrix.variant }}
           platforms: linux/amd64,linux/arm64
           push: true
