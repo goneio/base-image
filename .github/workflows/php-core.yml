@@ -8,6 +8,7 @@ on:
   workflow_run:
     workflows:
       - Build Marshall
+    branches: [ * ]
     types:
       - completed
 
