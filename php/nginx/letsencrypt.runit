@@ -23,7 +23,7 @@ fi
 echo -e "To change this, change the value of LETSENCRYPT_MODE"
 
 # Give Nginx a moment to start before we kill it again.
-sleep 4;
+sleep 5;
 
 echo "Certbot is running for ${LETSENCRYPT_EMAIL} / ${LETSENCRYPT_DOMAINS}..."
 certbot \
