@@ -1,4 +1,5 @@
 # From upstream redis
+# hadolint ignore=DL3007
 FROM redis:latest
 # Add healthcheck
 HEALTHCHECK --interval=30s --timeout=3s \

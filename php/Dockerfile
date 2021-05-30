@@ -58,6 +58,7 @@ RUN composer global require -q psy/psysh:@stable && \
 COPY php+cli/psysh-config.php /root/.config/psysh/config.php
 
 ARG PHP_CORE_VERSION
+# hadolint ignore=DL3024
 FROM ${PHP_CORE_VERSION} AS php-cli
 LABEL maintainer="Matthew Baggett <matthew@baggett.me>"
 
