@@ -7,7 +7,6 @@ on:
   workflow_run:
     workflows:
       - Lint Docker Files
-    branches: [ * ]
     types:
       - completed
 
