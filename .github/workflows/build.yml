@@ -20,6 +20,7 @@ jobs:
           - node/Dockerfile
           - mariadb/Dockerfile
           - redis/Dockerfile
+          - octoprint/Dockerfile
     steps:
       - uses: actions/checkout@master
       - uses: brpaz/hadolint-action@master
@@ -292,7 +293,7 @@ jobs:
   octoprint-build:
     name: "Bake Octoprint"
     runs-on: ubuntu-20.04
-    needs: [ lint, php-build-flavours ]
+    needs: [ lint ]
     steps:
       - uses: actions/checkout@v1
       - uses: docker/setup-qemu-action@v1
