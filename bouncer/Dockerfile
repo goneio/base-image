@@ -1,4 +1,4 @@
-FROM benzine/marshall:latest
+FROM benzine/php:cli
 LABEL maintainer="Matthew Baggett <matthew@baggett.me>" \
       org.label-schema.vcs-url="https://github.com/benzine-framework/docker"
 COPY self-signed-certificates /certs
@@ -36,3 +36,7 @@ COPY NginxDefault /etc/nginx/sites-enabled/default
 COPY NginxSSL /etc/nginx/sites-enabled/default-ssl
 # Disable daemonising in nginx
 RUN sed -i '1s;^;daemon off\;\n;' /etc/nginx/nginx.conf
+COPY setup /app/
+COPY composer.* /app/
+RUN composer install && \
+    chmod +x /app/setup

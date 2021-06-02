@@ -1,0 +1,14 @@
+{
+    "name": "benzine/bouncer",
+    "description": "Nginx Configuration Management",
+    "type": "project",
+    "require": {
+        "kint-php/kint": "^3.3"
+    },
+    "authors": [
+        {
+            "name": "Matthew Baggett",
+            "email": "matthew@baggett.me"
+        }
+    ]
+}
