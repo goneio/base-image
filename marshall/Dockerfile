@@ -11,7 +11,6 @@ ENV DEBIAN_FRONTEND="teletype" \
     COLOUR_NONE='\e[39m' \
     DEFAULT_TZ='Europe/London'
 
-CMD ["runsvdir", "-P", "/etc/service"]
 
 WORKDIR /app
 ENV PATH="/app:/app/bin:/app/vendor/bin:${PATH}"
@@ -20,5 +19,8 @@ COPY installers /installers
 COPY etc /etc
 COPY usr /usr
 
+CMD ["/usr/bin/marshall"]
+
 RUN /installers/install && \
-    rm -rf /marshall /installers
+    rm -rf /marshall /installers && \
+    chmod +x /usr/bin/marshall

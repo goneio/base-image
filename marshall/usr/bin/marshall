@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+# Fix for windows hosts manging run files
+dos2unix -q /etc/service/*/run
+
+# Start Runit.
+runsvdir -P /etc/service
