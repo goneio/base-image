@@ -3,12 +3,25 @@
     "description": "Nginx Configuration Management",
     "type": "project",
     "require": {
-        "kint-php/kint": "^3.3"
+        "php": "^8.0",
+        "ext-json": "*",
+        "ext-curl": "*",
+        "kint-php/kint": "^3.3",
+        "guzzlehttp/guzzle": "^7.3",
+        "twig/twig": "^3.0",
+        "league/flysystem": "^2.1",
+        "monolog/monolog": "^2.2",
+        "bramus/monolog-colored-line-formatter": "~3.0",
+        "adambrett/shell-wrapper": "dev-master",
+        "league/flysystem-aws-s3-v3": "^2.1"
     },
     "authors": [
         {
             "name": "Matthew Baggett",
             "email": "matthew@baggett.me"
         }
-    ]
+    ],
+    "require-dev": {
+        "friendsofphp/php-cs-fixer": "^3.0"
+    }
 }

@@ -1,5 +1,3 @@
 #!/usr/bin/env bash
-echo "Starting Setup"
-/app/setup
 echo "Starting Nginx"
 /usr/sbin/nginx

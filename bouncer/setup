@@ -1,9 +1,0 @@
-#!/usr/bin/env php
-<?php
-require_once("vendor/autoload.php");
-$environment = array_merge($_ENV, $_SERVER);
-ksort($environment);
-
-# Determine what sites are configured
-foreach($environment as $)
-\Kint::dump($environment);exit;

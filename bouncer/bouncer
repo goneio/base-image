@@ -1,0 +1,318 @@
+#!/usr/bin/env php
+<?php
+require_once 'vendor/autoload.php';
+
+use AdamBrett\ShellWrapper\Runners\Exec;
+use AdamBrett\ShellWrapper\Command\Builder as CommandBuilder;
+use Aws\S3\S3Client;
+use Bramus\Monolog\Formatter\ColoredLineFormatter;
+use GuzzleHttp\Client as Guzzle;
+use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
+use League\Flysystem\Filesystem;
+use League\Flysystem\Local\LocalFilesystemAdapter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+use Twig\Environment;
+use Twig\Loader\FilesystemLoader;
+
+class BouncerTarget
+{
+    private string $id;
+    private array $domains;
+    private int $port = 80;
+    private bool $letsEncrypt = false;
+    private string $targetPath;
+
+    private bool $useTemporaryCert = true;
+
+    public function __toArray()
+    {
+        return [
+            'id' => $this->getId(),
+            'name' => $this->getName(),
+            'domains' => $this->getDomains(),
+            'letsEncrypt' => $this->isLetsEncrypt(),
+            'targetPath' => $this->getTargetPath(),
+            'useTemporaryCert' => $this->isUseTemporaryCert(),
+        ];
+    }
+
+    /**
+     * @return bool
+     */
+    public function isUseTemporaryCert(): bool
+    {
+        return $this->useTemporaryCert;
+    }
+
+    /**
+     * @param bool $useTemporaryCert
+     * @return BouncerTarget
+     */
+    public function setUseTemporaryCert(bool $useTemporaryCert): BouncerTarget
+    {
+        $this->useTemporaryCert = $useTemporaryCert;
+        return $this;
+    }
+
+    public function getId(): string
+    {
+        return $this->id;
+    }
+
+    public function setId(string $id): BouncerTarget
+    {
+        $this->id = $id;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDomains(): array
+    {
+        return $this->domains;
+    }
+
+    /**
+     * @param string $domains
+     */
+    public function setDomains(array $domains): BouncerTarget
+    {
+        $this->domains = $domains;
+
+        return $this;
+    }
+
+    public function isLetsEncrypt(): bool
+    {
+        return $this->letsEncrypt;
+    }
+
+    public function setLetsEncrypt(bool $letsEncrypt): BouncerTarget
+    {
+        $this->letsEncrypt = $letsEncrypt;
+
+        return $this;
+    }
+
+    public function getTargetPath(): string
+    {
+        return $this->targetPath;
+    }
+
+    public function setTargetPath(string $targetPath): BouncerTarget
+    {
+        $this->targetPath = $targetPath;
+
+        return $this;
+    }
+
+    public function getPort(): int
+    {
+        return $this->port;
+    }
+
+    public function setPort(int $port): BouncerTarget
+    {
+        $this->port = $port;
+
+        return $this;
+    }
+
+    public function getName()
+    {
+        return reset($this->domains);
+    }
+}
+
+class Bouncer
+{
+    private array $environment;
+    private Guzzle $client;
+    private FilesystemLoader $loader;
+    private Environment $twig;
+    private Filesystem $configFilesystem;
+    private Filesystem $certificateStoreLocal;
+    private ?Filesystem $certificateStoreRemote;
+    private Logger $logger;
+
+    public function __construct()
+    {
+        $this->environment = array_merge($_ENV, $_SERVER);
+        ksort($this->environment);
+
+        $this->logger = new Monolog\Logger('bouncer');
+        $this->logger->pushHandler(new StreamHandler('/var/log/bouncer.log', Logger::DEBUG));
+        $stdout = new StreamHandler('php://stdout', Logger::DEBUG);
+        $stdout->setFormatter(new ColoredLineFormatter(null, "%level_name%: %message% \n"));
+        $this->logger->pushHandler($stdout);
+
+        $this->client = new Guzzle(
+            [
+                'base_uri' => 'http://localhost',
+                'curl' => [
+                    CURLOPT_UNIX_SOCKET_PATH => '/var/run/docker.sock',
+                ],
+            ]
+        );
+
+        $this->loader = new FilesystemLoader([
+            __DIR__,
+        ]);
+        $this->twig = new Environment($this->loader);
+
+        // Set up Filesystem for sites-enabled path
+        $this->configFilesystem = new Filesystem(new LocalFilesystemAdapter('/etc/nginx/sites-enabled'));
+
+        // Set up Local certificate store
+        $this->certificateStoreLocal = new Filesystem(new LocalFilesystemAdapter('/etc/letsencrypt/live'));
+
+        // Set up Remote certificate store, if configured
+        if($this->environment['BOUNCER_S3_BUCKET']){
+            $this->certificateStoreRemote = new Filesystem(
+                new AwsS3V3Adapter(
+                    new S3Client([
+                        'endpoint' => $this->environment['BOUNCER_S3_ENDPOINT'],
+                        'use_path_style_endpoint' => isset($this->environment['BOUNCER_S3_USE_PATH_STYLE_ENDPOINT']),
+                        'credentials' => [
+                            'key' => $this->environment['BOUNCER_S3_KEY_ID'],
+                            'secret' => $this->environment['BOUNCER_S3_KEY_SECRET']
+                        ],
+                        'region' =>$this->environment['BOUNCER_S3_REGION'] ?? 'us-east',
+                        'version' => 'latest'
+                    ]),
+                    $this->environment['BOUNCER_S3_BUCKET'],
+                    $this->environment['BOUNCER_S3_PREFIX'] ?? ''
+                )
+            );
+        }
+    }
+
+    /**
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     *
+     * @return BouncerTarget[]
+     */
+    public function findContainers(): array
+    {
+        $bouncerTargets = [];
+        $containers = json_decode($this->client->request('GET', 'containers/json')->getBody()->getContents(), true);
+        foreach ($containers as $container) {
+            $envs = [];
+            $inspect = json_decode($this->client->request('GET', "containers/{$container['Id']}/json")->getBody()->getContents(), true);
+            if (isset($inspect['Config']['Env'])) {
+                foreach ($inspect['Config']['Env'] as $environmentItem) {
+                    if (stripos($environmentItem, '=') !== false) {
+                        [$envKey, $envVal] = explode('=', $environmentItem, 2);
+                        $envs[$envKey] = $envVal;
+                    } else {
+                        $envs[$envKey] = true;
+                    }
+                }
+            }
+            if (isset($envs['BOUNCER_DOMAIN'])) {
+                $bouncerTarget = (new BouncerTarget())
+                    ->setId($inspect['Id'])
+                ;
+                foreach ($envs as $eKey => $eVal) {
+                    switch ($eKey) {
+                        case 'BOUNCER_DOMAIN':
+                            $domains = explode(',', $eVal);
+                            array_walk($domains, function(&$domain, $key){ $domain = trim($domain);});
+                            $bouncerTarget->setDomains($domains);
+
+                            break;
+
+                        case 'BOUNCER_LETSENCRYPT':
+                            $bouncerTarget->setLetsEncrypt(in_array(strtolower($eVal), ['yes', 'true'], true));
+
+                            break;
+
+                        case 'BOUNCER_TARGET_PORT':
+                            $bouncerTarget->setPort($eVal);
+
+                            break;
+                    }
+                }
+
+                $bouncerTarget->setTargetPath(sprintf('http://%s:%d/', ltrim($inspect['Name'], '/'), $bouncerTarget->getPort()));
+
+                $bouncerTargets[] = $bouncerTarget;
+            }
+        }
+
+        return $bouncerTargets;
+    }
+
+    public function run(): void
+    {
+        $this->logger->info('Starting Bouncer...');
+        $targets = $this->findContainers();
+        $this->logger->info(sprintf('Found %d services with BOUNCER_DOMAIN set', count($targets)));
+        foreach ($targets as $target) {
+            $this->generateNginxConfig($target);
+        }
+        $this->generateLetsEncryptCerts($targets);
+        sleep(86400);
+    }
+
+    private function generateNginxConfig(BouncerTarget $target): self
+    {
+        $this->configFilesystem->write(
+            $target->getName(),
+            $this->twig->render('NginxTemplate.twig', $target->__toArray())
+        );
+        $this->logger->info(sprintf('Created config for %s', $target->getName()));
+
+        return $this;
+    }
+
+    /**
+     * @param BouncerTarget[] $targets
+     *
+     * @return $this
+     */
+    private function generateLetsEncryptCerts(array $targets): self
+    {
+        foreach ($targets as $target) {
+            if (!$target->isLetsEncrypt()) {
+                continue;
+            }
+
+            $shell = new Exec();
+            $command = new CommandBuilder("/usr/bin/certbot");
+            $command->addSubCommand("certonly");
+            $command->addArgument("nginx");
+            if($this->environment['BOUNCER_LETSENCRYPT_MODE'] != 'production') {
+                $command->addArgument("test-cert");
+            }
+            $command->addFlag('d', implode(",", $target->getDomains()));
+            $command->addFlag('n');
+            $command->addFlag('m', $this->environment['BOUNCER_LETSENCRYPT_EMAIL']);
+            $command->addArgument('agree-tos');
+            $this->logger->info(sprintf("Generating letsencrypt for %s - %s", $target->getName(), $command->__toString()));
+            $shell->run($command);
+
+            $this->logger->info(sprintf("Generating complete.. Return value %d", $shell->getReturnValue()));
+
+            $target->setUseTemporaryCert(false);
+            $this->generateNginxConfig($target);
+        }
+
+        $this->restartNginx();
+
+        return $this;
+    }
+
+    private function restartNginx(){
+        $shell = new Exec();
+        $command = new CommandBuilder("/usr/sbin/nginx");
+        $command->addFlag('s', "reload");
+        $this->logger->info(sprintf("Restarting nginx"));
+        $shell->run($command);
+    }
+}
+
+(new Bouncer())->run();

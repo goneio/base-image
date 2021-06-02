@@ -4,13 +4,17 @@ services:
   bouncer:
     image: benzine/bouncer
     build: .
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./:/app
     environment:
-      - BOUNCE_SITE_A_DOMAIN="a.example.local"
-      - BOUNCE_SITE_A_PORT=80
-      - BOUNCE_SITE_A_SERVICE=web-a
-      - BOUNCE_SITE_B_DOMAIN="b.example.local"
-      - BOUNCE_SITE_B_PORT=80
-      - BOUNCE_SITE_B_SERVICE=web-a
+      - BOUNCER_LETSENCRYPT_MODE=staging
+      - BOUNCER_LETSENCRYPT_EMAIL=matthew@baggett.me
+      - BOUNCER_S3_ENDPOINT=http://grey.ooo:9000
+      - BOUNCER_S3_KEY_ID=geusebio
+      - BOUNCER_S3_KEY_SECRET=changeme
+      - BOUNCER_S3_BUCKET=bouncer-certificates
+      - BOUNCER_S3_USE_PATH_STYLE_ENDPOINT="yes"
     ports:
       - 127.0.99.100:80:80
       - 127.0.99.100:443:443
@@ -24,6 +28,9 @@ services:
       - ./test/public-web-a:/app/public
     ports:
       - 127.0.99.1:80:80
+    environment:
+      - BOUNCER_DOMAIN=a-site.ngrok.io
+      - BOUNCER_LETSENCRYPT=true
 
   web-b:
     image: benzine/php:nginx
@@ -31,3 +38,6 @@ services:
       - ./test/public-web-b:/app/public
     ports:
       - 127.0.99.2:80:80
+    environment:
+      - BOUNCER_DOMAIN=b-site.ngrok.io
+

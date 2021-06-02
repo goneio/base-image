@@ -1,4 +1,4 @@
-FROM benzine/php:cli
+FROM benzine/php:cli-8.0
 LABEL maintainer="Matthew Baggett <matthew@baggett.me>" \
       org.label-schema.vcs-url="https://github.com/benzine-framework/docker"
 COPY self-signed-certificates /certs
@@ -28,7 +28,11 @@ RUN apt-get -qq update && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /var/lib/dpkg/status.old /var/cache/debconf/templates.dat /var/log/dpkg.log /var/log/lastlog /var/log/apt/*.log
 
+VOLUME /etc/letsencrypt
+
 COPY nginx.runit /etc/service/nginx/run
+COPY logs.runit /etc/service/nginx-logs/run
+COPY bouncer.runit /etc/service/bouncer/run
 COPY logs-nginx-access.runit /etc/service/logs-nginx-access/run
 COPY logs-nginx-error.runit /etc/service/logs-nginx-error/run
 RUN chmod +x /etc/service/*/run
@@ -36,7 +40,8 @@ COPY NginxDefault /etc/nginx/sites-enabled/default
 COPY NginxSSL /etc/nginx/sites-enabled/default-ssl
 # Disable daemonising in nginx
 RUN sed -i '1s;^;daemon off\;\n;' /etc/nginx/nginx.conf
-COPY setup /app/
+COPY bouncer /app
 COPY composer.* /app/
 RUN composer install && \
-    chmod +x /app/setup
+    chmod +x /app/bouncer && \
+    mkdir -p /var/log/bouncer

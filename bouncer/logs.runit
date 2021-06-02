@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+if [[ -f /var/log/bouncer/*.log ]]; then
+  tail -f /var/log/bouncer/*.log
+else
+    sleep 1
+fi
