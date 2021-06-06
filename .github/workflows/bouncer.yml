@@ -12,7 +12,7 @@ on:
       - completed
 
 jobs:
-  wordpress-build:
+  bouncer-build:
     name: "Bake Bouncer Container"
     runs-on: self-hosted
     steps:
