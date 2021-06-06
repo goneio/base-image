@@ -2,8 +2,8 @@
 <?php
 require_once 'vendor/autoload.php';
 
-use AdamBrett\ShellWrapper\Runners\Exec;
 use AdamBrett\ShellWrapper\Command\Builder as CommandBuilder;
+use AdamBrett\ShellWrapper\Runners\Exec;
 use Aws\S3\S3Client;
 use Bramus\Monolog\Formatter\ColoredLineFormatter;
 use GuzzleHttp\Client as Guzzle;
@@ -42,21 +42,15 @@ class BouncerTarget
         ];
     }
 
-    /**
-     * @return bool
-     */
     public function isUseTemporaryCert(): bool
     {
         return $this->useTemporaryCert;
     }
 
-    /**
-     * @param bool $useTemporaryCert
-     * @return BouncerTarget
-     */
     public function setUseTemporaryCert(bool $useTemporaryCert): BouncerTarget
     {
         $this->useTemporaryCert = $useTemporaryCert;
+
         return $this;
     }
 
@@ -114,21 +108,15 @@ class BouncerTarget
         return $this;
     }
 
-    /**
-     * @return string
-     */
     public function getIp(): string
     {
         return $this->ip;
     }
 
-    /**
-     * @param string $ip
-     * @return BouncerTarget
-     */
     public function setIp(string $ip): BouncerTarget
     {
         $this->ip = $ip;
+
         return $this;
     }
 
@@ -149,25 +137,17 @@ class BouncerTarget
         return reset($this->domains);
     }
 
-    /**
-     * @return bool
-     */
     public function isAllowNonSSL(): bool
     {
         return $this->allowNonSSL;
     }
 
-    /**
-     * @param bool $allowNonSSL
-     * @return BouncerTarget
-     */
     public function setAllowNonSSL(bool $allowNonSSL): BouncerTarget
     {
         $this->allowNonSSL = $allowNonSSL;
+
         return $this;
     }
-
-
 }
 
 class Bouncer
@@ -215,7 +195,7 @@ class Bouncer
         $this->certificateStoreLocal = new Filesystem(new LocalFilesystemAdapter('/etc/letsencrypt'));
 
         // Set up Remote certificate store, if configured
-        if($this->environment['BOUNCER_S3_BUCKET']){
+        if ($this->environment['BOUNCER_S3_BUCKET']) {
             $this->certificateStoreRemote = new Filesystem(
                 new AwsS3V3Adapter(
                     new S3Client([
@@ -223,43 +203,16 @@ class Bouncer
                         'use_path_style_endpoint' => isset($this->environment['BOUNCER_S3_USE_PATH_STYLE_ENDPOINT']),
                         'credentials' => [
                             'key' => $this->environment['BOUNCER_S3_KEY_ID'],
-                            'secret' => $this->environment['BOUNCER_S3_KEY_SECRET']
+                            'secret' => $this->environment['BOUNCER_S3_KEY_SECRET'],
                         ],
-                        'region' =>$this->environment['BOUNCER_S3_REGION'] ?? 'us-east',
-                        'version' => 'latest'
+                        'region' => $this->environment['BOUNCER_S3_REGION'] ?? 'us-east',
+                        'version' => 'latest',
                     ]),
                     $this->environment['BOUNCER_S3_BUCKET'],
                     $this->environment['BOUNCER_S3_PREFIX'] ?? ''
                 )
             );
         }
-    }
-
-    /**
-     * Returns true when something has changed
-     * @return bool
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     */
-    private function stateHasChanged() : bool {
-        $newInstanceStates = [];
-        $containers = json_decode($this->client->request('GET', 'containers/json')->getBody()->getContents(), true);
-        foreach ($containers as $container) {
-            $inspect = json_decode($this->client->request('GET', "containers/{$container['Id']}/json")->getBody()->getContents(), true);
-            $newInstanceStates[$inspect['Id']] = implode("::", [
-                $inspect['Name'],
-                $inspect['Created'],
-                $inspect['Image'],
-                $inspect['State']['Status'],
-                sha1(implode("|", $inspect['Config']['Env'])),
-            ]);
-        }
-        $newStateHash = sha1(implode("\n", $newInstanceStates));
-        #$this->logger->debug(sprintf("Old state = %s. New State = %s.", substr($this->instanceStateHash,0,7), substr($newStateHash, 0,7)));
-        if($this->instanceStateHash != $newStateHash){
-            $this->instanceStateHash = $newStateHash;
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -292,7 +245,7 @@ class Bouncer
                     switch ($eKey) {
                         case 'BOUNCER_DOMAIN':
                             $domains = explode(',', $eVal);
-                            array_walk($domains, function(&$domain, $key){ $domain = trim($domain);});
+                            array_walk($domains, function (&$domain, $key): void { $domain = trim($domain); });
                             $bouncerTarget->setDomains($domains);
 
                             break;
@@ -314,15 +267,15 @@ class Bouncer
                     }
                 }
 
-                if(isset($inspect['NetworkSettings']['IPAddress']) && !empty($inspect['NetworkSettings']['IPAddress'])) {
+                if (isset($inspect['NetworkSettings']['IPAddress']) && !empty($inspect['NetworkSettings']['IPAddress'])) {
                     // As per docker service
                     $bouncerTarget->setIp($inspect['NetworkSettings']['IPAddress']);
-                }else{
+                } else {
                     // As per docker compose
                     $networks = array_values($inspect['NetworkSettings']['Networks']);
                     $bouncerTarget->setIp($networks[0]['IPAddress']);
                 }
-                $this->logger->debug(sprintf("Decided that %s has the ip %s", $bouncerTarget->getName(), $bouncerTarget->getIp()));
+                $this->logger->debug(sprintf('Decided that %s has the ip %s', $bouncerTarget->getName(), $bouncerTarget->getIp()));
 
                 $bouncerTarget->setTargetPath(sprintf('http://%s:%d/', $bouncerTarget->getIp(), $bouncerTarget->getPort()));
 
@@ -337,13 +290,44 @@ class Bouncer
     {
         $this->logger->info(sprintf('%s Starting Bouncer...', Emoji::CHARACTER_TIMER_CLOCK));
         $this->stateHasChanged();
-        while(true) {
+        while (true) {
             $this->runLoop();
         }
     }
 
-    private function runLoop(): void {
-        if($this->s3Enabled()) {
+    /**
+     * Returns true when something has changed.
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    private function stateHasChanged(): bool
+    {
+        $newInstanceStates = [];
+        $containers = json_decode($this->client->request('GET', 'containers/json')->getBody()->getContents(), true);
+        foreach ($containers as $container) {
+            $inspect = json_decode($this->client->request('GET', "containers/{$container['Id']}/json")->getBody()->getContents(), true);
+            $newInstanceStates[$inspect['Id']] = implode('::', [
+                $inspect['Name'],
+                $inspect['Created'],
+                $inspect['Image'],
+                $inspect['State']['Status'],
+                sha1(implode('|', $inspect['Config']['Env'])),
+            ]);
+        }
+        $newStateHash = sha1(implode("\n", $newInstanceStates));
+        //$this->logger->debug(sprintf("Old state = %s. New State = %s.", substr($this->instanceStateHash,0,7), substr($newStateHash, 0,7)));
+        if ($this->instanceStateHash != $newStateHash) {
+            $this->instanceStateHash = $newStateHash;
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private function runLoop(): void
+    {
+        if ($this->s3Enabled()) {
             $this->getCertificatesFromS3();
         }
         $targets = $this->findContainers();
@@ -352,66 +336,72 @@ class Bouncer
             $this->generateNginxConfig($target);
         }
         $this->generateLetsEncryptCerts($targets);
-        if($this->s3Enabled()) {
+        if ($this->s3Enabled()) {
             $this->writeCertificatesToS3();
         }
         $this->waitUntilContainerChange();
     }
 
-    private function waitUntilContainerChange() : void {
-        while($this->stateHasChanged() === false){
+    private function waitUntilContainerChange(): void
+    {
+        while ($this->stateHasChanged() === false) {
             sleep(5);
         }
-        $this->logger->debug(sprintf("%s Host Container state has changed", Emoji::CHARACTER_WARNING));
+        $this->logger->debug(sprintf('%s Host Container state has changed', Emoji::CHARACTER_WARNING));
     }
 
-    private function s3Enabled() : bool {
+    private function s3Enabled(): bool
+    {
         return $this->certificateStoreRemote instanceof Filesystem;
     }
 
-    private function getCertificatesFromS3() : void{
-        $this->logger->info(sprintf("%s Downloading Certificates from S3", Emoji::CHARACTER_DOWN_ARROW));
-        foreach($this->certificateStoreRemote->listContents("/",true) as $file){
-            /** @var $file FileAttributes */
-            if($file->isFile()){
+    private function getCertificatesFromS3(): void
+    {
+        $this->logger->info(sprintf('%s Downloading Certificates from S3', Emoji::CHARACTER_DOWN_ARROW));
+        foreach ($this->certificateStoreRemote->listContents('/', true) as $file) {
+            /** @var FileAttributes $file */
+            if ($file->isFile()) {
                 $localPath = "archive/{$file->path()}";
-                $this->logger->debug(sprintf(" > Downloading {$file->path()} "));
+                #$this->logger->debug(sprintf(" > Downloading {$file->path()} "));
                 $this->certificateStoreLocal->writeStream($localPath, $this->certificateStoreRemote->readStream($file->path()));
                 $this->fileHashes[$localPath] = sha1($this->certificateStoreLocal->read($localPath));
             }
         }
 
         // Copy certs into /live because certbot is a pain.
-        foreach($this->certificateStoreLocal->listContents("/archive", true) as $newLocalCert){
-            /** @var $newLocalCert FileAttributes */
-            if($newLocalCert->isFile() && pathinfo($newLocalCert->path(), PATHINFO_EXTENSION) == 'pem'){
-                $livePath = str_replace("archive/", "live/", $newLocalCert->path());
+        foreach ($this->certificateStoreLocal->listContents('/archive', true) as $newLocalCert) {
+            /** @var FileAttributes $newLocalCert */
+            if ($newLocalCert->isFile() && pathinfo($newLocalCert->path(), PATHINFO_EXTENSION) == 'pem') {
+                $livePath = str_replace('archive/', 'live/', $newLocalCert->path());
                 $this->certificateStoreLocal->writeStream($livePath, $this->certificateStoreLocal->readStream($newLocalCert->path()));
             }
         }
     }
 
-    private function fileChanged(string $localPath){
-        if(!isset($this->fileHashes[$localPath])){
+    private function fileChanged(string $localPath)
+    {
+        if (!isset($this->fileHashes[$localPath])) {
             return true;
         }
-        if(sha1($this->certificateStoreLocal->read($localPath)) != $this->fileHashes[$localPath]){
+        if (sha1($this->certificateStoreLocal->read($localPath)) != $this->fileHashes[$localPath]) {
             return true;
         }
+
         return false;
     }
 
-    private function writeCertificatesToS3() : void{
-        $this->logger->info(sprintf("%s Uploading Certificates to S3", Emoji::CHARACTER_UP_ARROW));
-        foreach($this->certificateStoreLocal->listContents("/archive",true) as $file){
-            /** @var $file FileAttributes */
-            if($file->isFile()){
-                $remotePath = str_replace("archive/","",$file->path());
-                if(!$this->certificateStoreRemote->fileExists($remotePath) || $this->fileChanged($file->path())){
-                    $this->logger->debug(sprintf(" > Uploading {$file->path()} "));
+    private function writeCertificatesToS3(): void
+    {
+        $this->logger->info(sprintf('%s Uploading Certificates to S3', Emoji::CHARACTER_UP_ARROW));
+        foreach ($this->certificateStoreLocal->listContents('/archive', true) as $file) {
+            /** @var FileAttributes $file */
+            if ($file->isFile()) {
+                $remotePath = str_replace('archive/', '', $file->path());
+                if (!$this->certificateStoreRemote->fileExists($remotePath) || $this->fileChanged($file->path())) {
+                    #$this->logger->debug(sprintf(" > Uploading {$file->path()} "));
                     $this->certificateStoreRemote->writeStream($remotePath, $this->certificateStoreLocal->readStream($file->path()));
-                }else{
-                    $this->logger->debug(sprintf(" > Skipping uploading {$file->path()}, file not changed."));
+                } else {
+                    #$this->logger->debug(sprintf(" > Skipping uploading {$file->path()}, file not changed."));
                 }
             }
         }
@@ -441,38 +431,39 @@ class Bouncer
             }
 
             $testAgeFile = "/archive/{$target->getName()}/fullchain1.pem";
-            if($this->certificateStoreLocal->fileExists($testAgeFile)){
+            if ($this->certificateStoreLocal->fileExists($testAgeFile)) {
                 $ssl = openssl_x509_parse($this->certificateStoreLocal->read($testAgeFile));
                 $timeRemainingSeconds = $ssl['validTo_time_t'] - time();
-                if($timeRemainingSeconds > 2592000){
+                if ($timeRemainingSeconds > 2592000) {
                     $this->logger->info(sprintf(
-                            "%s Skipping %s, certificate is still good for %d days",
+                        '%s Skipping %s, certificate is still good for %d days',
                         Emoji::CHARACTER_PARTYING_FACE,
                         $target->getName(),
                         round($timeRemainingSeconds / 86400)
                     ));
+
                     continue;
                 }
             }
 
             $shell = new Exec();
-            $command = new CommandBuilder("/usr/bin/certbot");
-            $command->addSubCommand("certonly");
-            $command->addArgument("nginx");
-            if($this->environment['BOUNCER_LETSENCRYPT_MODE'] != 'production') {
-                $command->addArgument("test-cert");
+            $command = new CommandBuilder('/usr/bin/certbot');
+            $command->addSubCommand('certonly');
+            $command->addArgument('nginx');
+            if ($this->environment['BOUNCER_LETSENCRYPT_MODE'] != 'production') {
+                $command->addArgument('test-cert');
             }
-            $command->addFlag('d', implode(",", $target->getDomains()));
+            $command->addFlag('d', implode(',', $target->getDomains()));
             $command->addFlag('n');
             $command->addFlag('m', $this->environment['BOUNCER_LETSENCRYPT_EMAIL']);
             $command->addArgument('agree-tos');
-            $this->logger->info(sprintf("%s Generating letsencrypt for %s - %s", Emoji::CHARACTER_PENCIL, $target->getName(), $command->__toString()));
+            $this->logger->info(sprintf('%s Generating letsencrypt for %s - %s', Emoji::CHARACTER_PENCIL, $target->getName(), $command->__toString()));
             $shell->run($command);
 
-            if($shell->getReturnValue() == 0) {
-                $this->logger->info(sprintf("%s Generating successful", Emoji::CHARACTER_PARTY_POPPER));
-            }else{
-                $this->logger->critical(sprintf("%s Generating failed!", Emoji::CHARACTER_WARNING));
+            if ($shell->getReturnValue() == 0) {
+                $this->logger->info(sprintf('%s Generating successful', Emoji::CHARACTER_PARTY_POPPER));
+            } else {
+                $this->logger->critical(sprintf('%s Generating failed!', Emoji::CHARACTER_WARNING));
             }
 
             $target->setUseTemporaryCert(false);
@@ -484,11 +475,12 @@ class Bouncer
         return $this;
     }
 
-    private function restartNginx() : void{
+    private function restartNginx(): void
+    {
         $shell = new Exec();
-        $command = new CommandBuilder("/usr/sbin/nginx");
-        $command->addFlag('s', "reload");
-        $this->logger->info(sprintf("%s Restarting nginx", Emoji::CHARACTER_TIMER_CLOCK));
+        $command = new CommandBuilder('/usr/sbin/nginx');
+        $command->addFlag('s', 'reload');
+        $this->logger->info(sprintf('%s Restarting nginx', Emoji::CHARACTER_TIMER_CLOCK));
         $shell->run($command);
     }
 }

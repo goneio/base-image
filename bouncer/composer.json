@@ -2,6 +2,10 @@
     "name": "benzine/bouncer",
     "description": "Nginx Configuration Management",
     "type": "project",
+    "config": {
+        "sort-packages": true
+    },
+    "license": "GPL-3.0-or-later",
     "require": {
         "php": "^8.0",
         "ext-json": "*",
