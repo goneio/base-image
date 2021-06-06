@@ -180,8 +180,8 @@ class Bouncer
     private Filesystem $certificateStoreLocal;
     private ?Filesystem $certificateStoreRemote;
     private Logger $logger;
-
     private string $instanceStateHash = '';
+    private array $fileHashes;
 
     public function __construct()
     {
@@ -314,7 +314,15 @@ class Bouncer
                     }
                 }
 
-                $bouncerTarget->setIp($inspect['NetworkSettings']['IPAddress']);
+                if(isset($inspect['NetworkSettings']['IPAddress']) && !empty($inspect['NetworkSettings']['IPAddress'])) {
+                    // As per docker service
+                    $bouncerTarget->setIp($inspect['NetworkSettings']['IPAddress']);
+                }else{
+                    // As per docker compose
+                    $networks = array_values($inspect['NetworkSettings']['Networks']);
+                    $bouncerTarget->setIp($networks[0]['IPAddress']);
+                }
+                $this->logger->debug(sprintf("Decided that %s has the ip %s", $bouncerTarget->getName(), $bouncerTarget->getIp()));
 
                 $bouncerTarget->setTargetPath(sprintf('http://%s:%d/', $bouncerTarget->getIp(), $bouncerTarget->getPort()));
 
@@ -366,8 +374,10 @@ class Bouncer
         foreach($this->certificateStoreRemote->listContents("/",true) as $file){
             /** @var $file FileAttributes */
             if($file->isFile()){
+                $localPath = "archive/{$file->path()}";
                 $this->logger->debug(sprintf(" > Downloading {$file->path()} "));
-                $this->certificateStoreLocal->writeStream("/archive/" . $file->path(), $this->certificateStoreRemote->readStream($file->path()));
+                $this->certificateStoreLocal->writeStream($localPath, $this->certificateStoreRemote->readStream($file->path()));
+                $this->fileHashes[$localPath] = sha1($this->certificateStoreLocal->read($localPath));
             }
         }
 
@@ -381,13 +391,28 @@ class Bouncer
         }
     }
 
+    private function fileChanged(string $localPath){
+        if(!isset($this->fileHashes[$localPath])){
+            return true;
+        }
+        if(sha1($this->certificateStoreLocal->read($localPath)) != $this->fileHashes[$localPath]){
+            return true;
+        }
+        return false;
+    }
+
     private function writeCertificatesToS3() : void{
         $this->logger->info(sprintf("%s Uploading Certificates to S3", Emoji::CHARACTER_UP_ARROW));
-        foreach($this->certificateStoreLocal->listContents("/",true) as $file){
+        foreach($this->certificateStoreLocal->listContents("/archive",true) as $file){
             /** @var $file FileAttributes */
             if($file->isFile()){
-                $this->logger->debug(sprintf(" > Uploading {$file->path()} "));
-                $this->certificateStoreRemote->writeStream($file->path(), $this->certificateStoreLocal->readStream($file->path()));
+                $remotePath = str_replace("archive/","",$file->path());
+                if(!$this->certificateStoreRemote->fileExists($remotePath) || $this->fileChanged($file->path())){
+                    $this->logger->debug(sprintf(" > Uploading {$file->path()} "));
+                    $this->certificateStoreRemote->writeStream($remotePath, $this->certificateStoreLocal->readStream($file->path()));
+                }else{
+                    $this->logger->debug(sprintf(" > Skipping uploading {$file->path()}, file not changed."));
+                }
             }
         }
     }
@@ -413,6 +438,21 @@ class Bouncer
         foreach ($targets as $target) {
             if (!$target->isLetsEncrypt()) {
                 continue;
+            }
+
+            $testAgeFile = "/archive/{$target->getName()}/fullchain1.pem";
+            if($this->certificateStoreLocal->fileExists($testAgeFile)){
+                $ssl = openssl_x509_parse($this->certificateStoreLocal->read($testAgeFile));
+                $timeRemainingSeconds = $ssl['validTo_time_t'] - time();
+                if($timeRemainingSeconds > 2592000){
+                    $this->logger->info(sprintf(
+                            "%s Skipping %s, certificate is still good for %d days",
+                        Emoji::CHARACTER_PARTYING_FACE,
+                        $target->getName(),
+                        round($timeRemainingSeconds / 86400)
+                    ));
+                    continue;
+                }
             }
 
             $shell = new Exec();
