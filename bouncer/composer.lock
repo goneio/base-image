@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "046110d722ae65fcb453f06a8aaa57a5",
+    "content-hash": "f018f92b48d106a1422699d332bee117",
     "packages": [
         {
             "name": "adambrett/shell-wrapper",
@@ -1093,6 +1093,72 @@
                 "source": "https://github.com/ralouphie/getallheaders/tree/develop"
             },
             "time": "2019-03-08T08:55:37+00:00"
+        },
+        {
+            "name": "spatie/emoji",
+            "version": "2.3.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/spatie/emoji.git",
+                "reference": "6d67e3786124e629f3f295280789bf8adeb970e4"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/spatie/emoji/zipball/6d67e3786124e629f3f295280789bf8adeb970e4",
+                "reference": "6d67e3786124e629f3f295280789bf8adeb970e4",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "php": "^7.2|^8.0"
+            },
+            "require-dev": {
+                "ext-iconv": "*",
+                "ext-json": "*",
+                "guzzlehttp/guzzle": "^7.0",
+                "phpunit/phpunit": "^9.4",
+                "symfony/console": "^4.2",
+                "twig/twig": "^2.7"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Spatie\\Emoji\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Freek Van der Herten",
+                    "email": "freek@spatie.be",
+                    "homepage": "https://spatie.be",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Display emoji characters",
+            "homepage": "https://github.com/spatie/emoji",
+            "keywords": [
+                "emoji",
+                "spatie"
+            ],
+            "support": {
+                "issues": "https://github.com/spatie/emoji/issues",
+                "source": "https://github.com/spatie/emoji/tree/2.3.0"
+            },
+            "funding": [
+                {
+                    "url": "https://spatie.be/open-source/support-us",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://github.com/spatie",
+                    "type": "github"
+                }
+            ],
+            "time": "2021-05-08T19:16:56+00:00"
         },
         {
             "name": "symfony/polyfill-ctype",

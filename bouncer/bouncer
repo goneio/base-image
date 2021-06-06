@@ -12,6 +12,7 @@ use League\Flysystem\Filesystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
+use Spatie\Emoji\Emoji;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 
@@ -138,6 +139,8 @@ class Bouncer
     private ?Filesystem $certificateStoreRemote;
     private Logger $logger;
 
+    private string $instanceStateHash = '';
+
     public function __construct()
     {
         $this->environment = array_merge($_ENV, $_SERVER);
@@ -167,7 +170,7 @@ class Bouncer
         $this->configFilesystem = new Filesystem(new LocalFilesystemAdapter('/etc/nginx/sites-enabled'));
 
         // Set up Local certificate store
-        $this->certificateStoreLocal = new Filesystem(new LocalFilesystemAdapter('/etc/letsencrypt/live'));
+        $this->certificateStoreLocal = new Filesystem(new LocalFilesystemAdapter('/etc/letsencrypt/archive'));
 
         // Set up Remote certificate store, if configured
         if($this->environment['BOUNCER_S3_BUCKET']){
@@ -188,6 +191,32 @@ class Bouncer
                 )
             );
         }
+    }
+
+    /**
+     * Returns true when something has changed
+     * @return bool
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    private function stateHasChanged() : bool {
+        $newInstanceStates = [];
+        $containers = json_decode($this->client->request('GET', 'containers/json')->getBody()->getContents(), true);
+        foreach ($containers as $container) {
+            $inspect = json_decode($this->client->request('GET', "containers/{$container['Id']}/json")->getBody()->getContents(), true);
+            $newInstanceStates[$inspect['Id']] = implode("::", [
+                $inspect['Created'],
+                $inspect['Image'],
+                $inspect['State']['Status'],
+                sha1(implode("|", $inspect['Config']['Env'])),
+            ]);
+        }
+        $newStateHash = sha1(implode("\n", $newInstanceStates));
+        #$this->logger->debug(sprintf("Old state = %s. New State = %s.", substr($this->instanceStateHash,0,7), substr($newStateHash, 0,7)));
+        if($this->instanceStateHash != $newStateHash){
+            $this->instanceStateHash = $newStateHash;
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -248,14 +277,58 @@ class Bouncer
 
     public function run(): void
     {
-        $this->logger->info('Starting Bouncer...');
+        $this->logger->info(sprintf('%s Starting Bouncer...', Emoji::CHARACTER_TIMER_CLOCK));
+        $this->stateHasChanged();
+        while(true) {
+            $this->runLoop();
+        }
+    }
+
+    private function runLoop(){
+        if($this->s3Enabled()) {
+            $this->getCertificatesFromS3();
+        }
         $targets = $this->findContainers();
-        $this->logger->info(sprintf('Found %d services with BOUNCER_DOMAIN set', count($targets)));
+        $this->logger->info(sprintf('%s Found %d services with BOUNCER_DOMAIN set', Emoji::CHARACTER_MAGNIFYING_GLASS_TILTED_LEFT, count($targets)));
         foreach ($targets as $target) {
             $this->generateNginxConfig($target);
         }
         $this->generateLetsEncryptCerts($targets);
-        sleep(86400);
+        if($this->s3Enabled()) {
+            $this->writeCertificatesToS3();
+        }
+        $this->waitUntilContainerChange();
+    }
+
+    private function waitUntilContainerChange(){
+        while($this->stateHasChanged() === false){
+            sleep(5);
+        }
+        $this->logger->debug(sprintf("%s Host Container state has changed", Emoji::CHARACTER_WARNING));
+    }
+
+    private function s3Enabled() : bool {
+        return $this->certificateStoreRemote instanceof Filesystem;
+    }
+
+    private function filesystemSync(Filesystem $from, Filesystem $to){
+        foreach($from->listContents("/", true) as $file){
+            /** @var $file \League\Flysystem\FileAttributes */
+            if($file->isFile()){
+                #$this->logger->debug(sprintf(" > Syncing {$file->path()} "));
+                $to->writeStream($file->path(), $from->readStream($file->path()));
+            }
+        }
+    }
+
+    private function getCertificatesFromS3(){
+        $this->logger->info(sprintf("%s Downloading Certificates from S3", Emoji::CHARACTER_DOWN_ARROW));
+        $this->filesystemSync($this->certificateStoreRemote, $this->certificateStoreLocal);
+    }
+
+    private function writeCertificatesToS3(){
+        $this->logger->info(sprintf("%s Uploading Certificates to S3", Emoji::CHARACTER_UP_ARROW));
+        $this->filesystemSync($this->certificateStoreLocal, $this->certificateStoreRemote);
     }
 
     private function generateNginxConfig(BouncerTarget $target): self
@@ -264,7 +337,7 @@ class Bouncer
             $target->getName(),
             $this->twig->render('NginxTemplate.twig', $target->__toArray())
         );
-        $this->logger->info(sprintf('Created config for %s', $target->getName()));
+        $this->logger->info(sprintf('%s Created config for %s', Emoji::CHARACTER_PENCIL, $target->getName()));
 
         return $this;
     }
@@ -292,10 +365,14 @@ class Bouncer
             $command->addFlag('n');
             $command->addFlag('m', $this->environment['BOUNCER_LETSENCRYPT_EMAIL']);
             $command->addArgument('agree-tos');
-            $this->logger->info(sprintf("Generating letsencrypt for %s - %s", $target->getName(), $command->__toString()));
+            $this->logger->info(sprintf("%s Generating letsencrypt for %s - %s", Emoji::CHARACTER_PENCIL, $target->getName(), $command->__toString()));
             $shell->run($command);
 
-            $this->logger->info(sprintf("Generating complete.. Return value %d", $shell->getReturnValue()));
+            if($shell->getReturnValue() == 0) {
+                $this->logger->info(sprintf("%s Generating successful", Emoji::CHARACTER_PARTY_POPPER));
+            }else{
+                $this->logger->critical(sprintf("%s Generating failed!", Emoji::CHARACTER_WARNING));
+            }
 
             $target->setUseTemporaryCert(false);
             $this->generateNginxConfig($target);
@@ -310,7 +387,7 @@ class Bouncer
         $shell = new Exec();
         $command = new CommandBuilder("/usr/sbin/nginx");
         $command->addFlag('s', "reload");
-        $this->logger->info(sprintf("Restarting nginx"));
+        $this->logger->info(sprintf("%s Restarting nginx", Emoji::CHARACTER_TIMER_CLOCK));
         $shell->run($command);
     }
 }
