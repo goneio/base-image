@@ -8,6 +8,7 @@ use Aws\S3\S3Client;
 use Bramus\Monolog\Formatter\ColoredLineFormatter;
 use GuzzleHttp\Client as Guzzle;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
+use League\Flysystem\FileAttributes;
 use League\Flysystem\Filesystem;
 use League\Flysystem\Local\LocalFilesystemAdapter;
 use Monolog\Handler\StreamHandler;
@@ -24,6 +25,7 @@ class BouncerTarget
     private int $port = 80;
     private bool $letsEncrypt = false;
     private string $targetPath;
+    private bool $allowNonSSL = false;
 
     private bool $useTemporaryCert = true;
 
@@ -36,6 +38,7 @@ class BouncerTarget
             'letsEncrypt' => $this->isLetsEncrypt(),
             'targetPath' => $this->getTargetPath(),
             'useTemporaryCert' => $this->isUseTemporaryCert(),
+            'allowNonSSL' => $this->isAllowNonSSL(),
         ];
     }
 
@@ -145,6 +148,26 @@ class BouncerTarget
     {
         return reset($this->domains);
     }
+
+    /**
+     * @return bool
+     */
+    public function isAllowNonSSL(): bool
+    {
+        return $this->allowNonSSL;
+    }
+
+    /**
+     * @param bool $allowNonSSL
+     * @return BouncerTarget
+     */
+    public function setAllowNonSSL(bool $allowNonSSL): BouncerTarget
+    {
+        $this->allowNonSSL = $allowNonSSL;
+        return $this;
+    }
+
+
 }
 
 class Bouncer
@@ -189,7 +212,7 @@ class Bouncer
         $this->configFilesystem = new Filesystem(new LocalFilesystemAdapter('/etc/nginx/sites-enabled'));
 
         // Set up Local certificate store
-        $this->certificateStoreLocal = new Filesystem(new LocalFilesystemAdapter('/etc/letsencrypt/archive'));
+        $this->certificateStoreLocal = new Filesystem(new LocalFilesystemAdapter('/etc/letsencrypt'));
 
         // Set up Remote certificate store, if configured
         if($this->environment['BOUNCER_S3_BUCKET']){
@@ -283,6 +306,11 @@ class Bouncer
                             $bouncerTarget->setPort($eVal);
 
                             break;
+
+                        case 'BOUNCER_ALLOW_NON_SSL':
+                            $bouncerTarget->setAllowNonSSL(in_array(strtolower($eVal), ['yes', 'true'], true));
+
+                            break;
                     }
                 }
 
@@ -306,7 +334,7 @@ class Bouncer
         }
     }
 
-    private function runLoop(){
+    private function runLoop(): void {
         if($this->s3Enabled()) {
             $this->getCertificatesFromS3();
         }
@@ -322,7 +350,7 @@ class Bouncer
         $this->waitUntilContainerChange();
     }
 
-    private function waitUntilContainerChange(){
+    private function waitUntilContainerChange() : void {
         while($this->stateHasChanged() === false){
             sleep(5);
         }
@@ -333,24 +361,35 @@ class Bouncer
         return $this->certificateStoreRemote instanceof Filesystem;
     }
 
-    private function filesystemSync(Filesystem $from, Filesystem $to){
-        foreach($from->listContents("/", true) as $file){
-            /** @var $file \League\Flysystem\FileAttributes */
+    private function getCertificatesFromS3() : void{
+        $this->logger->info(sprintf("%s Downloading Certificates from S3", Emoji::CHARACTER_DOWN_ARROW));
+        foreach($this->certificateStoreRemote->listContents("/",true) as $file){
+            /** @var $file FileAttributes */
             if($file->isFile()){
-                #$this->logger->debug(sprintf(" > Syncing {$file->path()} "));
-                $to->writeStream($file->path(), $from->readStream($file->path()));
+                $this->logger->debug(sprintf(" > Downloading {$file->path()} "));
+                $this->certificateStoreLocal->writeStream("/archive/" . $file->path(), $this->certificateStoreRemote->readStream($file->path()));
+            }
+        }
+
+        // Copy certs into /live because certbot is a pain.
+        foreach($this->certificateStoreLocal->listContents("/archive", true) as $newLocalCert){
+            /** @var $newLocalCert FileAttributes */
+            if($newLocalCert->isFile() && pathinfo($newLocalCert->path(), PATHINFO_EXTENSION) == 'pem'){
+                $livePath = str_replace("archive/", "live/", $newLocalCert->path());
+                $this->certificateStoreLocal->writeStream($livePath, $this->certificateStoreLocal->readStream($newLocalCert->path()));
             }
         }
     }
 
-    private function getCertificatesFromS3(){
-        $this->logger->info(sprintf("%s Downloading Certificates from S3", Emoji::CHARACTER_DOWN_ARROW));
-        $this->filesystemSync($this->certificateStoreRemote, $this->certificateStoreLocal);
-    }
-
-    private function writeCertificatesToS3(){
+    private function writeCertificatesToS3() : void{
         $this->logger->info(sprintf("%s Uploading Certificates to S3", Emoji::CHARACTER_UP_ARROW));
-        $this->filesystemSync($this->certificateStoreLocal, $this->certificateStoreRemote);
+        foreach($this->certificateStoreLocal->listContents("/",true) as $file){
+            /** @var $file FileAttributes */
+            if($file->isFile()){
+                $this->logger->debug(sprintf(" > Uploading {$file->path()} "));
+                $this->certificateStoreRemote->writeStream($file->path(), $this->certificateStoreLocal->readStream($file->path()));
+            }
+        }
     }
 
     private function generateNginxConfig(BouncerTarget $target): self
@@ -405,7 +444,7 @@ class Bouncer
         return $this;
     }
 
-    private function restartNginx(){
+    private function restartNginx() : void{
         $shell = new Exec();
         $command = new CommandBuilder("/usr/sbin/nginx");
         $command->addFlag('s', "reload");

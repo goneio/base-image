@@ -1,6 +1,8 @@
 server {
+{% if allowNonSSL %}
   listen      80;
   listen      [::]:80;
+{% endif %}
   listen      443 ssl;
   listen      [::]:443 ssl;
   server_name {{ domains|join(' ') }};
@@ -21,3 +23,11 @@ server {
     proxy_pass  {{ targetPath }};
   }
 }
+{% if not allowNonSSL %}
+server {
+  listen      80;
+  listen      [::]:80;
+  server_name {{ domains|join(' ') }};
+  return 301 https://$host$request_uri;
+}
+{% endif %}
