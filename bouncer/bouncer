@@ -20,6 +20,7 @@ class BouncerTarget
 {
     private string $id;
     private array $domains;
+    private string $ip;
     private int $port = 80;
     private bool $letsEncrypt = false;
     private string $targetPath;
@@ -107,6 +108,24 @@ class BouncerTarget
     {
         $this->targetPath = $targetPath;
 
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getIp(): string
+    {
+        return $this->ip;
+    }
+
+    /**
+     * @param string $ip
+     * @return BouncerTarget
+     */
+    public function setIp(string $ip): BouncerTarget
+    {
+        $this->ip = $ip;
         return $this;
     }
 
@@ -204,6 +223,7 @@ class Bouncer
         foreach ($containers as $container) {
             $inspect = json_decode($this->client->request('GET', "containers/{$container['Id']}/json")->getBody()->getContents(), true);
             $newInstanceStates[$inspect['Id']] = implode("::", [
+                $inspect['Name'],
                 $inspect['Created'],
                 $inspect['Image'],
                 $inspect['State']['Status'],
@@ -266,7 +286,9 @@ class Bouncer
                     }
                 }
 
-                $bouncerTarget->setTargetPath(sprintf('http://%s:%d/', ltrim($inspect['Name'], '/'), $bouncerTarget->getPort()));
+                $bouncerTarget->setIp($inspect['NetworkSettings']['IPAddress']);
+
+                $bouncerTarget->setTargetPath(sprintf('http://%s:%d/', $bouncerTarget->getIp(), $bouncerTarget->getPort()));
 
                 $bouncerTargets[] = $bouncerTarget;
             }
